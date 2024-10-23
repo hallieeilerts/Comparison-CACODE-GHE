@@ -1,7 +1,7 @@
 ---
 title: "CA CODE and GHE cause-specific mortality comparisons"
 date: "2024-10-23"
-output: html_document
+output: rmarkdown::github_document
 editor_options: 
   chunk_output_type: console
 ---
