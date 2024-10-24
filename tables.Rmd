@@ -26,7 +26,7 @@ dat$COD <- factor(dat$COD, levels = v_cod_order)
 
 ## 5-9y
 
-```{r}
+```{r 05to09y}
 std_border <- fp_border(color = "gray")
 dat %>%
   filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
@@ -55,7 +55,7 @@ dat %>%
 
 ## 10-14y
 
-```{r}
+```{r 10to14y}
 std_border <- fp_border(color = "gray")
 dat %>%
   filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
@@ -83,7 +83,7 @@ dat %>%
 
 ## 15-19y F
 
-```{r}
+```{r 15to19yf}
 std_border <- fp_border(color = "gray")
 dat %>%
   filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
@@ -114,7 +114,7 @@ dat %>%
 
 Large differences in collective violence for Latin America and the Caribbean, Northern America and Europe, Sub-Saharan Africa, and Western Asia and Northern Africa (with GHE being much higher). Need to look into this.
 
-```{r}
+```{r 15to19ym}
 std_border <- fp_border(color = "gray")
 dat %>%
   filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
