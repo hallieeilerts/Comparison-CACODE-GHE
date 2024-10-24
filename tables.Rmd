@@ -1,0 +1,133 @@
+---
+title: "Tables"
+output:
+  html_document: default
+  rmarkdown::github_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(flextable)
+library(tidyverse)
+library(officer)
+dat <- readRDS("./gen/rates.rds")
+v_cod_order <- c("Measles", "Maternal", 
+                 "Intrapartum", "Preterm","SepsisMening", "Tetanus", "MeningEnceph" ,
+                 "HIV", "ARI","LRI",  "TB", "Diarrhoeal", "Malaria", "OtherCMPN",
+                "Congenital", "Cardiovascular", "Digestive", "Neoplasms", "OtherNCD",
+                "InterpVio","SelfHarm", "Drowning", "RTI", "OtherInj", "NatDis", "CollectVio",
+                "COVID19","OtherCOVID19")
+dat$COD <- factor(dat$COD, levels = v_cod_order)
+```
+
+# Mean deaths and CSMFs for 2000-2021
+
+```{r, echo=FALSE}
+std_border <- fp_border(color = "gray")
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AdminLevel == "Regional" & AgeGroup == "05to09y" & Sex == "Total") %>%  
+  group_by(AgeGroup, AdminLevel, Name, Region, Sex, COD) %>%
+  summarise(across(everything(), mean)) %>% 
+  ungroup() %>%
+  mutate(total_dths = round(total_dths),
+         dths_ghe = round(dths_ghe),
+         dths_cacode = round(dths_cacode),
+         frac_ghe = paste0(formatC(100*frac_ghe, 0, format="f"),"%"),
+         frac_cacode = paste0(formatC(100*frac_cacode, 0, format="f"),"%")) %>%
+  mutate(combo_ghe = paste(dths_ghe, " (", frac_ghe, ")", sep = ""),
+         combo_cacode = paste(dths_cacode, " (", frac_cacode, ")", sep = "")) %>%
+  select(all_of(c("Name","COD",
+                   "dths_ghe","frac_ghe","dths_cacode","frac_cacode"))) %>%
+  flextable() %>% autofit() %>% align(j=2:5, align="center", part="all") %>%
+  merge_v(., j = ~ Name) %>%
+  hline(., part = "all", border = std_border) %>%
+  set_header_labels(., Name = "", dths_ghe = "Deaths", frac_ghe = "CSMF",
+                    dths_cacode = "Deaths", frac_cacode = "CSMF") %>%
+  add_header_row(., values = c("5-9y","GHE", "CA CODE"),
+                  colwidths = c(2,2,2))
+
+```
+
+
+```{r, echo=FALSE}
+std_border <- fp_border(color = "gray")
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AdminLevel == "Regional" & AgeGroup == "10to14y" & Sex == "Total") %>%  
+  group_by(AgeGroup, AdminLevel, Name, Region, Sex, COD) %>%
+  summarise(across(everything(), mean)) %>% 
+  ungroup() %>%
+  mutate(total_dths = round(total_dths),
+         dths_ghe = round(dths_ghe),
+         dths_cacode = round(dths_cacode),
+         frac_ghe = paste0(formatC(100*frac_ghe, 0, format="f"),"%"),
+         frac_cacode = paste0(formatC(100*frac_cacode, 0, format="f"),"%")) %>%
+  mutate(combo_ghe = paste(dths_ghe, " (", frac_ghe, ")", sep = ""),
+         combo_cacode = paste(dths_cacode, " (", frac_cacode, ")", sep = "")) %>%
+  select(all_of(c("Name","COD",
+                   "dths_ghe","frac_ghe","dths_cacode","frac_cacode"))) %>%
+  flextable() %>% autofit() %>% align(j=2:5, align="center", part="all") %>%
+  merge_v(., j = ~ Name) %>%
+  hline(., part = "all", border = std_border) %>%
+  set_header_labels(., Name = "", dths_ghe = "Deaths", frac_ghe = "CSMF",
+                    dths_cacode = "Deaths", frac_cacode = "CSMF") %>%
+  add_header_row(., values = c("10-14y","GHE", "CA CODE"),
+                  colwidths = c(2,2,2))
+```
+
+```{r, echo=FALSE}
+std_border <- fp_border(color = "gray")
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AdminLevel == "Regional" & AgeGroup == "15to19y" & Sex == "Female") %>%  
+  group_by(AgeGroup, AdminLevel, Name, Region, Sex, COD) %>%
+  summarise(across(everything(), mean)) %>% 
+  ungroup() %>%
+  mutate(total_dths = round(total_dths),
+         dths_ghe = round(dths_ghe),
+         dths_cacode = round(dths_cacode),
+         frac_ghe = paste0(formatC(100*frac_ghe, 0, format="f"),"%"),
+         frac_cacode = paste0(formatC(100*frac_cacode, 0, format="f"),"%")) %>%
+  mutate(combo_ghe = paste(dths_ghe, " (", frac_ghe, ")", sep = ""),
+         combo_cacode = paste(dths_cacode, " (", frac_cacode, ")", sep = "")) %>%
+  select(all_of(c("Name","COD",
+                   "dths_ghe","frac_ghe","dths_cacode","frac_cacode"))) %>%
+  flextable() %>% autofit() %>% align(j=2:5, align="center", part="all") %>%
+  merge_v(., j = ~ Name) %>%
+  hline(., part = "all", border = std_border) %>%
+  set_header_labels(., Name = "", dths_ghe = "Deaths", frac_ghe = "CSMF",
+                    dths_cacode = "Deaths", frac_cacode = "CSMF") %>%
+  add_header_row(., values = c("15-19y F","GHE", "CA CODE"),
+                  colwidths = c(2,2,2))
+
+```
+
+```{r, echo=FALSE}
+std_border <- fp_border(color = "gray")
+ft <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AdminLevel == "Regional" & AgeGroup == "15to19y" & Sex == "Male") %>%  
+  group_by(AgeGroup, AdminLevel, Name, Region, Sex, COD) %>%
+  summarise(across(everything(), mean)) %>% 
+  ungroup() %>%
+  mutate(total_dths = round(total_dths),
+         dths_ghe = round(dths_ghe),
+         dths_cacode = round(dths_cacode),
+         frac_ghe = paste0(formatC(100*frac_ghe, 0, format="f"),"%"),
+         frac_cacode = paste0(formatC(100*frac_cacode, 0, format="f"),"%")) %>%
+  mutate(combo_ghe = paste(dths_ghe, " (", frac_ghe, ")", sep = ""),
+         combo_cacode = paste(dths_cacode, " (", frac_cacode, ")", sep = "")) %>%
+  select(all_of(c("Name","COD",
+                   "dths_ghe","frac_ghe","dths_cacode","frac_cacode"))) %>%
+  flextable() %>% autofit() %>% align(j=2:5, align="center", part="all") %>%
+  merge_v(., j = ~ Name) %>%
+  hline(., part = "all", border = std_border) %>%
+  set_header_labels(., Name = "", dths_ghe = "Deaths", frac_ghe = "CSMF",
+                    dths_cacode = "Deaths", frac_cacode = "CSMF") %>%
+  add_header_row(., values = c("15-19y M","GHE", "CA CODE"),
+                  colwidths = c(2,2,2))
+
+```
