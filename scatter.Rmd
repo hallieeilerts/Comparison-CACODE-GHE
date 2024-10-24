@@ -1,0 +1,67 @@
+---
+title: "Scatter plots"
+output:
+  html_document: default
+  rmarkdown::github_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(ggplot2)
+library(tidyverse)
+
+dat <- readRDS("./gen/rates.rds")
+v_cod_order <- c("Measles", "Maternal", 
+                 "Intrapartum", "Preterm","SepsisMening", "Tetanus", "MeningEnceph" ,
+                 "HIV", "ARI","LRI",  "TB", "Diarrhoeal", "Malaria", "OtherCMPN",
+                "Congenital", "Cardiovascular", "Digestive", "Neoplasms", "OtherNCD",
+                "InterpVio","SelfHarm", "Drowning", "RTI", "OtherInj", "NatDis", "CollectVio",
+                "COVID19","OtherCOVID19")
+dat$COD <- factor(dat$COD, levels = v_cod_order)
+```
+
+# National-level cause-specific rates (per 1000) 2000-2021 
+
+```{r, echo=FALSE, warning=FALSE}
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup == "05to09y" & Sex == "Total" & AdminLevel == "National") %>%
+  ggplot() +
+  geom_abline(aes(slope = 1, intercept = 0)) +
+  geom_point(aes(x = rate_ghe*1000, y = rate_cacode*1000), shape = 1, alpha = .5) +
+  facet_wrap(~COD, nrow = 3) +
+  labs(x = "GHE", y = "CA CODE", title = "5-9y", subtitle = "Death rate per 1,000") + 
+  theme(aspect.ratio = 1) 
+
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup == "10to14y" & Sex == "Total" & AdminLevel == "National") %>%
+  ggplot() +
+  geom_abline(aes(slope = 1, intercept = 0)) +
+  geom_point(aes(x = rate_ghe*1000, y = rate_cacode*1000), shape = 1, alpha = .5) +
+  facet_wrap(~COD, nrow = 3) +
+  labs(x = "GHE", y = "CA CODE", title = "10-14y", subtitle = "Death rate per 1,000") + 
+  theme(aspect.ratio = 1) 
+
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup == "15to19y" & Sex == "Female" & AdminLevel == "National") %>%
+  ggplot() +
+  geom_abline(aes(slope = 1, intercept = 0)) +
+  geom_point(aes(x = rate_ghe*1000, y = rate_cacode*1000), shape = 1, alpha = .5) +
+  facet_wrap(~COD, nrow = 3) +
+  labs(x = "GHE", y = "CA CODE", title = "15-19yF", subtitle = "Death rate per 1,000") + 
+  theme(aspect.ratio = 1) 
+
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup == "15to19y" & Sex == "Male" & AdminLevel == "National") %>%
+  ggplot() +
+  geom_abline(aes(slope = 1, intercept = 0)) +
+  geom_point(aes(x = rate_ghe*1000, y = rate_cacode*1000), shape = 1, alpha = .5) +
+  facet_wrap(~COD, nrow = 3) +
+  labs(x = "GHE", y = "CA CODE", title = "15-19yM", subtitle = "Death rate per 1,000") + 
+  theme(aspect.ratio = 1) 
+```

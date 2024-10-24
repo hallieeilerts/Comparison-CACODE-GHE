@@ -1,0 +1,694 @@
+---
+title: "Trends in age continuity"
+output:
+  html_document: default
+  rmarkdown::github_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(ggplot2)
+library(tidyverse)
+
+
+dat <- readRDS("./gen/rates.rds")
+v_cod_order <- c("Measles", "Maternal", 
+                 "Intrapartum", "Preterm","SepsisMening", "Tetanus", "MeningEnceph" ,
+                 "HIV", "ARI","LRI",  "TB", "Diarrhoeal", "Malaria", "OtherCMPN",
+                "Congenital", "Cardiovascular", "Digestive", "Neoplasms", "OtherNCD",
+                "InterpVio","SelfHarm", "Drowning", "RTI", "OtherInj", "NatDis", "CollectVio",
+                "COVID19","OtherCOVID19")
+dat$COD <- factor(dat$COD, levels = v_cod_order)
+```
+
+# CSMF comparison for 5-9y
+
+### India
+
+* GHE has higher CSMFs for LRI, OtherCMPN, and Diarrhoeal. 
+* CA CODE has higher OtherNCD, Digestive, Drowning, and OtherInj.
+
+```{r IND5to9frac}
+p <- dat %>%
+  filter(AgeGroup %in% c("01to04y", "05to09y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("frac_cacode","frac_ghe"))
+  ) %>% 
+  mutate(CACODE = frac_cacode_05to09y,
+         GHE = frac_ghe_05to09y) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Name == "IND") 
+p %>%
+  ggplot() + 
+  geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "%",
+        title="CSMF for 5-9y",
+        subtitle = p %>% distinct(Name)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+### Sub-Saharan Africa
+
+Smoothed trend of national-level CSMFs for 5-9y in Sub-Saharan Africa.
+
+* GHE tends to have higher HIV
+* CA CODE has higher diarrhoeal, malaria, otherncd
+
+```{r SSA5to9frac}
+p <- dat %>%
+  filter(AgeGroup %in% c("01to04y", "05to09y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("frac_cacode","frac_ghe"))
+  ) %>% 
+  mutate(CACODE = frac_cacode_05to09y,
+         GHE = frac_ghe_05to09y) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Region == "Sub-Saharan Africa") 
+p %>%
+  ggplot() + 
+  #geom_point(aes(x = Year, y = value, col = Source), alpha = .1, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "%",
+        title="CSMF for 5-9y",
+        subtitle = p %>% distinct(Region)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+
+# Age continuity in cause-specific rates from 1-4y to 5-9y
+
+* Values above zero mean an increase in the cause-specific rate from 1-4y to 5-9y
+* Values below zero mean a decrease in the cause-specific rate from 1-4y to 5-9y
+
+### India
+
+* For GHE, the rate of malaria increases from 1-4y to 5-9y. It is the opposite for CA CODE.
+* For GHE, the rate of OtherNCD decreases from 1-4y to 5-9y. The rates are similar between age groups for CA CODE.
+* For both GHE and CA CODE, the rate of OtherCMPN is lower in 5-9y than 1-4y.
+* For CA CODE, the cause-specific rate of TB was lower for 1-4y in the early 2000s, and higher for 5-9y in the late 2010s.
+
+```{r IND1to9}
+p <- dat %>%
+  filter(AgeGroup %in% c("01to04y", "05to09y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("rate_cacode","rate_ghe"))
+  ) %>% 
+  mutate(CACODE = (rate_cacode_05to09y - rate_ghe_01to04y)/(rate_cacode_05to09y + rate_ghe_01to04y)/2*100,
+         GHE = (rate_ghe_05to09y - rate_ghe_01to04y)/(rate_ghe_05to09y + rate_ghe_01to04y)/2*100) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Name == "IND") 
+p %>%
+  ggplot() + 
+  geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "%",
+        title="Relative % difference in cause-specific mx from 1-4y to 5-9y",
+        subtitle = p %>% distinct(Name)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+### Nigeria
+
+* Similar age continuity for GHE and CA CODE.
+* For both CA CODE and GHE, large decrease in malaria from 1-4y to 5-9y.
+* For CA CODE, OtherInj were lower in 5-9y than 1-4y. For GHE the rates are similar between the two age groups.
+* Big relative percent difference in Natural Disaster rates from 1-4y to 5-9y for CA CODE. Very small real difference (see below).
+
+
+```{r NGA1to9}
+p <- dat %>%
+  filter(AgeGroup %in% c("01to04y", "05to09y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("rate_cacode","rate_ghe"))
+  ) %>% 
+  mutate(CACODE = (rate_cacode_05to09y - rate_ghe_01to04y)/(rate_cacode_05to09y + rate_ghe_01to04y)/2*100,
+         GHE = (rate_ghe_05to09y - rate_ghe_01to04y)/(rate_ghe_05to09y + rate_ghe_01to04y)/2*100) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Name == "NGA") 
+p %>%
+  ggplot() + 
+  geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "%",
+        title="Relative % difference in cause-specific mx from 1-4y to 5-9y",
+        subtitle = p %>% distinct(Name)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+```{r NGA1to9abs}
+p <- dat %>%
+  filter(AgeGroup %in% c("01to04y", "05to09y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("rate_cacode","rate_ghe"))
+  ) %>% 
+  mutate(CACODE = (rate_cacode_05to09y - rate_ghe_01to04y)*100,
+         GHE = (rate_ghe_05to09y - rate_ghe_01to04y)*100) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Name == "NGA") 
+p %>%
+  ggplot() + 
+  geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "Rate difference",
+        title="Real difference in cause-specific mx from 1-4y to 5-9y",
+        subtitle = p %>% distinct(Name)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+### Eastern and South-eastern Asia
+
+Smoothed trend of relative percent differences in national-level rates from 1-4y to 5-9y.
+
+* Similar age continuity for GHE and CA CODE.
+* For GHE, RTI was higher in 5-9y than 1-4y. For CA CODE it was the opposite.
+* Need to look into flat NatDis for GHE.
+
+```{r ESEasia}
+p <- dat %>%
+  filter(AgeGroup %in% c("01to04y", "05to09y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("rate_cacode","rate_ghe"))
+  ) %>% 
+  mutate(CACODE = (rate_cacode_05to09y - rate_ghe_01to04y)/(rate_cacode_05to09y + rate_ghe_01to04y)/2*100,
+         GHE = (rate_ghe_05to09y - rate_ghe_01to04y)/(rate_ghe_05to09y + rate_ghe_01to04y)/2*100) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Region ==  "Eastern and South-eastern Asia") 
+p %>%
+  ggplot() + 
+  #geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "%",
+        title="Relative % difference in cause-specific mx from 1-4y to 5-9y",
+        subtitle = p %>% distinct(Region)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+
+```
+
+### Sub-Saharan Africa
+
+Smoothed trend of relative percent differences in national-level rates from 1-4y to 5-9y.
+
+* HIV goes down from 1-4y to 5-9y for both GHE and CA CODE, but more for CA CODE.
+* Big relative decrease in NatDis from 1-4y to 5-9y for CA CODE. Small real change.
+
+```{r SSA}
+p <- dat %>%
+  filter(AgeGroup %in% c("01to04y", "05to09y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("rate_cacode","rate_ghe"))
+  ) %>% 
+  mutate(CACODE = (rate_cacode_05to09y - rate_ghe_01to04y)/(rate_cacode_05to09y + rate_ghe_01to04y)/2*100,
+         GHE = (rate_ghe_05to09y - rate_ghe_01to04y)/(rate_ghe_05to09y + rate_ghe_01to04y)/2*100) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Region == "Sub-Saharan Africa") 
+p %>%
+  ggplot() + 
+  #geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "%",
+        title="Relative % difference in cause-specific mx from 1-4y to 5-9y",
+        subtitle = p %>% distinct(Region)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+
+```
+
+### World
+
+Smoothed trend of relative percent differences in world rates from 1-4y to 5-9y.
+
+* Directionality of change between 1-4y and 5-9y is same for all cause-specific rates between CA CODE and GHE
+* For GHE, there is less of a difference between age groups for HIV
+* For CA CODE, there is less of a difference between age groups for OtherNCD
+
+```{r world}
+p <- dat %>%
+  filter(AgeGroup %in% c("01to04y", "05to09y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("rate_cacode","rate_ghe"))
+  ) %>% 
+  mutate(CACODE = (rate_cacode_05to09y - rate_ghe_01to04y)/(rate_cacode_05to09y + rate_ghe_01to04y)/2*100,
+         GHE = (rate_ghe_05to09y - rate_ghe_01to04y)/(rate_ghe_05to09y + rate_ghe_01to04y)/2*100) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(Name == "World") 
+p %>%
+  ggplot() + 
+  geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "%",
+        title="Relative % difference in cause-specific mx from 1-4y to 5-9y",
+        subtitle = p %>% distinct(Name)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+
+```
+
+# CSMF comparison for 15-19y
+
+### India
+
+In India, CA CODE has much lower OtherCMPN and higher OtherNCD in 15-19y than GHE.
+
+```{r IND1519frac}
+p <- dat %>%
+  filter(AgeGroup %in% c("15to19y", "20to24y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("frac_cacode","frac_ghe"))
+  ) %>% 
+  mutate(CACODE = (frac_cacode_15to19y),
+         GHE = (frac_ghe_15to19y)) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Name == "IND") 
+p %>%
+  ggplot() + 
+  geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "CSMF",
+        title="CSMF for 15-19y Total",
+        subtitle = p %>% distinct(Name)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+* In India, the GHE CSMFs essentially don't change between 15-19y and 20-24y.
+* Because CA CODE has a lower CSMF for OtherCMPN in 15-19y (shown above), there is a large jump to the GHE CSMF (and rate) for 20-24y.
+* Because CA CODE has a higher CSMF for OtherNCD in 15-19y (shown above), there is a large drop to the GHE CSMF (and rate) for 20-24y.
+
+```{r IND1524frac}
+p <- dat %>%
+  filter(AgeGroup %in% c("15to19y", "20to24y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("frac_cacode","frac_ghe"))
+  ) %>% 
+  mutate(CACODE = (frac_ghe_20to24y - frac_cacode_15to19y),
+         GHE = (frac_ghe_20to24y - frac_ghe_15to19y)) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Name == "IND") 
+p %>%
+  ggplot() + 
+  geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "CSMF difference",
+        title="Difference in CSMF from 15-19y to 20-24y Total",
+        subtitle = p %>% distinct(Name)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+### Sub-Saharan Africa
+
+Smoothed trend of national-level CSMFs for 15-19y.
+
+* GHE has higher Maternal
+* CA CODE has higher OtherNCD, InterpVio, SelfHarm
+* GHE and CA CODE have different trends in the 15-19y CSMF for OtherCMPN
+
+```{r SSA1519ffrac}
+p <- dat %>%
+  filter(AgeGroup %in% c("15to19y", "20to24y") & Sex == "Female") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("frac_cacode","frac_ghe"))
+  ) %>% 
+  mutate(CACODE = frac_cacode_15to19y,
+         GHE = frac_ghe_15to19y) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Region == "Sub-Saharan Africa") 
+p %>%
+  ggplot() + 
+  #geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "CSMF",
+        title="CSMF for 15-19y Females",
+        subtitle = p %>% distinct(Region)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+* Large differences in 15-19y CSMFs for InterpVio and CollectVio for males
+
+```{r SSA1519mfrac}
+p <- dat %>%
+  filter(AgeGroup %in% c("15to19y", "20to24y") & Sex == "Male") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("frac_cacode","frac_ghe"))
+  ) %>% 
+  mutate(CACODE = frac_cacode_15to19y,
+         GHE = frac_ghe_15to19y) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Region == "Sub-Saharan Africa") 
+p %>%
+  ggplot() + 
+  #geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "CSMF",
+        title="CSMF for 15-19y Males",
+        subtitle = p %>% distinct(Region)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+### Western Asia and Northern Africa
+
+* The 15-19y CSMF for CollectVio is much higher in GHE, InterpVio higher in CA CODE.
+
+```{r WANA1519mfrac}
+p <- dat %>%
+  filter(AgeGroup %in% c("15to19y", "20to24y") & Sex == "Male") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("frac_cacode","frac_ghe"))
+  ) %>% 
+  mutate(CACODE = frac_cacode_15to19y,
+         GHE = frac_ghe_15to19y) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Region == "Western Asia and Northern Africa") 
+p %>%
+  ggplot() + 
+  #geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "CSMF",
+        title="CSMF for 15-19y Males",
+        subtitle = p %>% distinct(Region)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+# Age continuity in cause-specific rates from 15-19y to 20-24y
+
+* Values above zero mean an increase in the cause-specific rate from 15-19y to 20-24y
+* Values below zero mean a decrease in the cause-specific rate from 15-19y to 20-24y
+
+### Sub-Saharan Africa
+
+Smoothed trend of relative percent differences in national-level rates from 15-19y to 20-24y.
+
+* For GHE, the rate of Cardiovascular, Digestive, Neoplasms, and SelfHarm increases from 15-19y to 20-24y. It is the opposite for CA CODE.
+* For CA CODE, there are large relative increases in cause-specific rates of CollectVio from 15-19y to 20-24y. 
+  * This is due to the CA CODE CSMF for CollectVio being much lower in 15-19y than GHE.
+
+```{r SSA1524mrate}
+p <- dat %>%
+  filter(AgeGroup %in% c("15to19y", "20to24y") & Sex == "Male") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("rate_cacode","rate_ghe"))
+  ) %>% 
+  mutate(CACODE = (rate_ghe_20to24y - rate_cacode_15to19y)/(rate_ghe_20to24y + rate_cacode_15to19y)/2*100,
+         GHE = (rate_ghe_20to24y - rate_ghe_15to19y)/(rate_ghe_20to24y + rate_ghe_15to19y)/2*100) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(AdminLevel == "National" & Region == "Sub-Saharan Africa") 
+p %>%
+  ggplot() + 
+  #geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "%",
+        title="Relative % difference in cause-specific mx from 15-19y to 20-24y - Males",
+        subtitle = p %>% distinct(Region)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+
+### World
+
+Smoothed trend of relative percent differences in world rates from 15-19y to 20-24y.
+
+* For GHE, the rate of Digestive, OtherNCD increases from 15-19y to 20-24y. It is the opposite for CA CODE.
+  * For Digestive, the real difference is rather small (see below)
+* For CA CODE, there are large relative increases in CollectVio from 15-19y to 20-24y.
+  * In this case, the real difference in rates is notable (see below).
+
+
+```{r World1524rate}
+p <- dat %>%
+  filter(AgeGroup %in% c("15to19y", "20to24y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("rate_cacode","rate_ghe"))
+  ) %>% 
+  mutate(CACODE = (rate_ghe_20to24y - rate_cacode_15to19y)/(rate_ghe_20to24y + rate_cacode_15to19y)/2*100,
+         GHE = (rate_ghe_20to24y - rate_ghe_15to19y)/(rate_ghe_20to24y + rate_ghe_15to19y)/2*100) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(Name == "World") 
+p %>%
+  ggplot() + 
+  #geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "%",
+        title="Relative % difference in cause-specific mx from 15-19y to 20-24y - Total",
+        subtitle = p %>% distinct(Name)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+```{r World1524abc}
+p <- dat %>%
+  filter(AgeGroup %in% c("15to19y", "20to24y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  pivot_wider(
+    id_cols = all_of(c("AdminLevel","Name","Region","Sex","Year", "COD")),
+    names_from = AgeGroup,
+    values_from = all_of(c("rate_cacode","rate_ghe"))
+  ) %>% 
+  mutate(CACODE = (rate_ghe_20to24y - rate_cacode_15to19y)*100,
+         GHE = (rate_ghe_20to24y - rate_ghe_15to19y)*100) %>% 
+  filter(!(is.na(CACODE) & is.na(GHE))) %>% 
+  select(all_of(c("AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>%
+  filter(Name == "World") 
+p %>%
+  ggplot() + 
+  #geom_point(aes(x = Year, y = value, col = Source), alpha = .2, shape = 1) +
+  geom_smooth(aes(x = Year, y = value, col = Source)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_text(data = . %>% distinct(COD, .keep_all = TRUE), 
+            aes(label = COD, y=Inf), 
+            x = 2010, hjust = .5, vjust = 1.5, size = 3.5) +
+  labs(x="", y= "Rate difference",
+        title="Real difference in cause-specific mx from 15-19y to 20-24y - Total",
+        subtitle = p %>% distinct(Name)) +
+  theme_bw() +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  facet_wrap(~COD) +
+  theme(strip.text = element_blank(), legend.direction = "horizontal", legend.position = "bottom") 
+```
+
