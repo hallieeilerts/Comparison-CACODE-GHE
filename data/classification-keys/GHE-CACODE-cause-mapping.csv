@@ -1,0 +1,226 @@
+ghecause,causename,parent_category,excluded_from_total,cacode_00to01m,cacode_01to59m,cacode_05to09y,cacode_10to14y,cacode_15to19yF,cacode_15to19yM
+0,All Causes,1,,All,All,All,All,All,All
+10,"Communicable, maternal, perinatal and nutritional conditions",1,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+20,Infectious and parasitic diseases,1,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+30,Tuberculosis,,,OtherCMPN,TB,TB,TB,TB,TB
+40,STDs excluding HIV,1,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+50,Syphilis,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+60,Chlamydia,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+70,Gonorrhoea,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+80,Trichomoniasis,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+85,Genital herpes,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+90,Other STDs,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+100,HIV/AIDS,,,OtherCMPN,HIV,HIV,HIV,HIV,HIV
+110,Diarrhoeal diseases,,,Diarrhoeal,Diarrhoeal,Diarrhoeal,Diarrhoeal,OtherCMPN,OtherCMPN
+120,Childhood-cluster diseases,1,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+130,Whooping cough,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+140,Diphtheria,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+150,Measles,,,OtherCMPN,Measles,Measles,OtherCMPN,OtherCMPN,OtherCMPN
+160,Tetanus,,,Tetanus,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+170,Meningitis,,,SepsisMening,MeningEnceph,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+180,Encephalitis,,,SepsisMening,MeningEnceph,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+185,Hepatitis,1,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+186,Acute hepatitis A,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+190,Acute hepatitis B,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+200,Acute hepatitis C,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+205,Acute hepatitis E,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+210,Parasitic and vector diseases,1,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+220,Malaria,,,OtherCMPN,Malaria,Malaria,Malaria,OtherCMPN,OtherCMPN
+230,African trypanosomiasis,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+240,Chagas disease,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+250,Schistosomiasis,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+260,Leishmaniasis,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+270,Lymphatic filariasis,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+280,Onchocerciasis,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+285,Cysticercosis,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+295,Echinococcosis,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+300,Dengue,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+310,Trachoma,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+315,Yellow fever,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+320,Rabies,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+330,Intestinal nematode infections,1,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+340,Ascariasis,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+350,Trichuriasis,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+360,Hookworm disease,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+362,Food-bourne trematodes,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+365,Leprosy,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+370,Other infectious diseases,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+380,Respiratory infections ,1,,ARI,ARI,LRI,LRI,OtherCMPN,OtherCMPN
+390,Lower respiratory infections,,,ARI,ARI,LRI,LRI,OtherCMPN,OtherCMPN
+395,COVID-19,,,COVID19,COVID19,COVID19,COVID19,COVID19,COVID19
+400,Upper respiratory infections,,,ARI,ARI,LRI,LRI,OtherCMPN,OtherCMPN
+410,Otitis media,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+420,Maternal conditions,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,Maternal,OtherCMPN
+490,Neonatal conditions,1,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+500,Preterm birth complications,,,Preterm,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+510,Birth asphyxia and birth trauma,,,Intrapartum,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+520,Neonatal sepsis and infections,,,SepsisMening,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+530,Other neonatal conditions,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+540,Nutritional deficiencies,1,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+550,Protein-energy malnutrition,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+560,Iodine deficiency,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+570,Vitamin A deficiency,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+580,Iron-deficiency anaemia,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+590,Other nutritional deficiencies,,,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN,OtherCMPN
+600,Noncommunicable diseases,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+610,Malignant neoplasms,1,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+620,Mouth and oropharynx cancers,1,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+621,Lip and oral cavity,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+622,Nasopharynx,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+623,Other pharynx,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+630,Oesophagus cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+640,Stomach cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+650,Colon and rectum cancers,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+660,Liver cancer,1,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+661,Liver cancer secondary to hepatitis B,,1,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+662,Liver cancer secondary to hepatitis C,,1,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+663,Liver cancer secondary to alcohol use,,1,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+664,Other liver cancer,,1,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+670,Pancreas cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+680,"Trachea, bronchus, lung cancers",,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+690,Melanoma and other skin cancers,1,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+691,Malignant skin melanoma,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+692,Non-melanoma skin cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+700,Breast cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+710,Cervix uteri cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+720,Corpus uteri cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+730,Ovary cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+740,Prostate cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+742,Testicular cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+745,Kidney cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+750,Bladder cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+751,Brain and nervous system cancers,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+752,Gallbladder and biliary tract cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+753,Larynx cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+754,Thyroid cancer,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+755,Mesothelioma,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+760,"Lymphomas, multiple myeloma",1,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+761,Hodgkin lymphoma,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+762,Non-Hodgkin lymphoma,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+763,Multiple myeloma,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+770,Leukaemia,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+780,Other malignant neoplasms,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+790,Other neoplasms,,,OtherNCD,OtherNCD,Neoplasms,Neoplasms,Neoplasms,Neoplasms
+800,Diabetes mellitus,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+810,"Endocrine, blood, immune disorders",1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+811,Thalassaemias,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+812,Sickle cell disorders and trait,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+813,Other haemoglobinopathies and haemolytic anaemias,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+814,"Other endocrine, blood and immune disorders",,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+820,Mental and substance use disorders,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+830,Depressive disorders,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+831,Major depressive disorder,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+832,Dysthymia,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+840,Bipolar disorder,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+850,Schizophrenia,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+860,Alcohol use disorders,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+870,Drug use disorders,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+871,Opioid use disorders,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+872,Cocaine use disorders,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+873,Amphetamine use disorders,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+874,Cannabis use disorders,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+875,Other drug use disorders,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+880,Anxiety disorders,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+890,Eating disorders,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+900,Autism and Asperger syndrome,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+910,Childhood behavioural disorders,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+911,Attention deficit/hyperactivity syndrome,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+912,Conduct disorder,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+920,Idiopathic intellectual disability,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+930,Other mental and behavioural disorders,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+940,Neurological conditions,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+950,Alzheimer disease and other dementias,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+960,Parkinson disease,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+970,Epilepsy,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+980,Multiple sclerosis,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+990,Migraine,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1000,Non-migraine headache,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1010,Other neurological conditions,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1020,Sense organ diseases,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1030,Glaucoma,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1040,Cataracts,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1050,Uncorrected refractive errors,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1060,Macular degeneration,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1070,Other vision loss,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1080,Other hearing loss,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1090,Other sense organ disorders,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1100,Cardiovascular diseases,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,Cardiovascular,Cardiovascular
+1110,Rheumatic heart disease,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,Cardiovascular,Cardiovascular
+1120,Hypertensive heart disease,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,Cardiovascular,Cardiovascular
+1130,Ischaemic heart disease,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,Cardiovascular,Cardiovascular
+1140,Stroke,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,Cardiovascular,Cardiovascular
+1141,Ischaemic stroke,,1,OtherNCD,OtherNCD,OtherNCD,OtherNCD,Cardiovascular,Cardiovascular
+1142,Haemorrhagic stroke,,1,OtherNCD,OtherNCD,OtherNCD,OtherNCD,Cardiovascular,Cardiovascular
+1150,"Cardiomyopathy, myocarditis, endocarditis",,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,Cardiovascular,Cardiovascular
+1160,Other circulatory diseases,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,Cardiovascular,Cardiovascular
+1170,Respiratory diseases,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1180,Chronic obstructive pulmonary disease,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1190,Asthma,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1200,Other respiratory diseases,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1210,Digestive diseases,1,,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1220,Peptic ulcer disease,,,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1230,Cirrhosis of the liver,1,,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1231,Cirrhosis due to hepatitis B,,1,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1232,Cirrhosis due to hepatitis C,,1,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1233,Cirrhosis due to alcohol use,,1,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1234,Other liver cirrhosis,,1,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1240,Appendicitis,,,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1241,Gastritis and duodenitis,,,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1242,Paralytic ileus and intestinal obstruction,,,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1244,Inflammatory bowel disease,,,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1246,Gallbladder and biliary diseases,,,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1248,Pancreatitis,,,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1250,Other digestive diseases,,,OtherNCD,OtherNCD,Digestive,Digestive,Digestive,Digestive
+1260,Genitourinary diseases,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1270,Kidney diseases,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1271,Acute glomerulonephritis,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1272,Chronic kidney disease due to diabetes,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1273,Other chronic kidney disease,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1280,Benign prostatic hyperplasia,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1290,Urolithiasis,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1300,Other urinary diseases,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1310,Infertility,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1320,Gynecological diseases,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1330,Skin diseases,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1331,Dermatitis,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1332,Psoriasis,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1333,Fungal skin diseases,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1334,Viral skin diseases,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1335,Acne vulgaris,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1336,Alopecia areata,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1337,Other specified skin diseases,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1339,Other skin and subcutaneous diseases,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1340,Musculoskeletal diseases,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1350,Rheumatoid arthritis,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1360,Osteoarthritis,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1370,Gout,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1380,Back and neck pain,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1390,Other musculoskeletal disorders,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1400,Congenital anomalies,1,,Congenital,Congenital,Congenital,OtherNCD,OtherNCD,OtherNCD
+1410,Neural tube defects,,,Congenital,Congenital,Congenital,OtherNCD,OtherNCD,OtherNCD
+1420,Cleft lip and cleft palate,,,Congenital,Congenital,Congenital,OtherNCD,OtherNCD,OtherNCD
+1430,Down syndrome,,,Congenital,Congenital,Congenital,OtherNCD,OtherNCD,OtherNCD
+1440,Congenital heart anomalies,,,Congenital,Congenital,Congenital,OtherNCD,OtherNCD,OtherNCD
+1450,Other chromosomal anomalies,,,Congenital,Congenital,Congenital,OtherNCD,OtherNCD,OtherNCD
+1460,Other congenital anomalies,,,Congenital,Congenital,Congenital,OtherNCD,OtherNCD,OtherNCD
+1470,Oral conditions,1,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1480,Dental caries,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1490,Periodontal disease,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1500,Edentulism,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1502,Other oral disorders,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1505,Sudden infant death syndrome,,,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD,OtherNCD
+1510,Injuries,1,,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj
+1520,Unintentional injuries,1,,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj
+1530,Road injury,,,OtherInj,RTI,RTI,RTI,RTI,RTI
+1540,Poisonings,,,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj
+1550,Falls,,,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj
+1560,"Fire, heat and hot substances",,,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj
+1570,Drowning,,,OtherInj,Drowning,Drowning,Drowning,Drowning,Drowning
+1575,Exposure to mechanical forces,,,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj
+1580,Natural disasters,,,OtherInj,NatDis,NatDis,NatDis,NatDis,NatDis
+1590,Other unintentional injuries,,,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj,OtherInj
+1600,Intentional injuries,1,,OtherInj,OtherInj,OtherInj,OtherInj,SelfHarm,SelfHarm
+1610,Self-harm,,,OtherInj,OtherInj,OtherInj,OtherInj,SelfHarm,SelfHarm
+1620,Interpersonal violence,,,OtherInj,OtherInj,OtherInj,OtherInj,InterpVio,InterpVio
+1630,Collective violence and legal intervention,,,OtherInj,OtherInj,CollectVio,CollectVio,CollectVio,CollectVio
+1700,Other COVID-19 pandemic-related outcomes,,,OtherCOVID19,OtherCOVID19,OtherCOVID19,OtherCOVID19,OtherCOVID19,OtherCOVID19
