@@ -1,7 +1,6 @@
 ---
 title: "Scatter plots"
 output:
-  html_document: default
   rmarkdown::github_document: default
 editor_options: 
   chunk_output_type: console
