@@ -27,6 +27,11 @@ setDT(dat)[,total_dths := sum(dths),by=list(AgeGroup, AdminLevel, Name, year, se
 setDT(dat)[,total_dths_lb := sum(dths.low),by=list(AgeGroup, AdminLevel, Name, year, sex)]
 setDT(dat)[,total_dths_ub := sum(dths.up),by=list(AgeGroup, AdminLevel, Name, year, sex)]
 
+# Calculate GHE fractions
+dat$frac_ghe <- dat$dths/dat$total_dths
+dat$frac_lb_ghe <- dat$dths/dat$total_dths_lb
+dat$frac_ub_ghe <- dat$dths/dat$total_dths_ub
+
 # Calculate rates
 dat$rate_ghe <- dat$dths/dat$pop
 dat$rate_lb_ghe <- dat$dths.low/dat$pop
@@ -34,6 +39,9 @@ dat$rate_ub_ghe <- dat$dths.up/dat$pop
 dat$rate_cacode <- (dat$total_dths * dat$frac)/dat$pop
 dat$rate_lb_cacode <- (dat$total_dths_lb * dat$frac_lb)/dat$pop
 dat$rate_ub_cacode <- (dat$total_dths_ub * dat$frac_ub)/dat$pop
+dat$dths_cacode <- (dat$total_dths * dat$frac)
+dat$dths_lb_cacode <- (dat$total_dths_lb * dat$frac_lb)
+dat$dths_ub_cacode <- (dat$total_dths_ub * dat$frac_ub)
 
 # Merge on regions for national values
 dat <- merge(dat, key[,c("iso3", "SDGregion")], by.x = "Name", by.y = "iso3", all.x = TRUE)
@@ -53,9 +61,11 @@ names(dat)[which(names(dat) == "sex")] <- "Sex"
 # Tidy
 dat <- dat[,c("AgeGroup","AdminLevel","Name","Region","Sex","Year","COD",
              "total_dths", "total_dths_lb", "total_dths_ub",
+             "frac_ghe", "frac_lb_ghe", "frac_ub_ghe",
              "dths_ghe","dths_lb_ghe","dths_ub_ghe",
              "rate_ghe","rate_lb_ghe","rate_ub_ghe",
              "frac_cacode", "frac_lb_cacode", "frac_ub_cacode",
+             "dths_cacode","dths_lb_cacode","dths_ub_cacode",
              "rate_cacode","rate_lb_cacode","rate_ub_cacode")]
 dat <- dat[order(dat$AgeGroup, dat$AdminLevel, dat$Name, dat$Sex, dat$Year, dat$COD),]
 

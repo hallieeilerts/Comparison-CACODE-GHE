@@ -5,6 +5,7 @@
 #' Clear environment
 rm(list=ls())
 #' Libraries
+library(data.table)
 #' Inputs
 ## GHE 2021 results aggregated by CA CODE categories
 ghe <- readRDS("./gen/ghe-agg-cod.rds")
@@ -32,14 +33,24 @@ dat_pop <- setDT(dat_pop)[,lapply(.SD, sum),by=list(SDGregion,sex,year,AgeGroup)
 v_del <- c("iso3","WHOname","pop")
 dat_reg <- as.data.frame(dat)[,!(names(dat) %in% v_del)]
 
+# Aggregate deaths over regions
 # Grouping variables for aggregation
 v_grouping <- c("SDGregion","sex", "year", "AgeGroup", "cacodecause")
-
-# Aggregate deaths over regions
 dat_agg <- setDT(dat_reg)[,lapply(.SD, sum),by=v_grouping]
 
 # Merge on population counts
 dat_agg <- merge(as.data.frame(dat_agg), dat_pop, by = c("SDGregion","sex", "year", "AgeGroup"))
+
+# Create world region
+dat_world <- dat_reg
+dat_world$SDGregion <- "World"
+dat_world <- setDT(dat_world)[,lapply(.SD, sum),by=v_grouping]
+dat_pop_world <- dat_pop
+dat_pop_world$SDGregion <- "World"
+dat_pop_world <- setDT(dat_pop_world)[,lapply(.SD, sum),by=list(SDGregion,sex,year,AgeGroup)]
+dat_world <- merge(dat_world, dat_pop_world, by = c("SDGregion","sex", "year", "AgeGroup"))
+# Combine with regions
+dat_agg <- rbind(dat_agg, dat_world)
 
 # Harmonize column names
 v_del <- c("iso3","WHOname","SDGregion")

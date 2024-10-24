@@ -72,8 +72,15 @@ v_grouping <- c("SDGregion","Sex", "Year", "AgeGroup", "Variable", "Quantile")
 v_cod <- names(dat_reg)[!(names(dat_reg) %in% v_grouping)]
 # Aggregate deaths over regions
 dat_agg <- setDT(dat_reg)[,lapply(.SD, sum), by=v_grouping]
-dat_agg <- as.data.frame(dat_agg)
+# Create world region
+dat_world <- dat_agg
+dat_world$SDGregion <- "World"
+dat_world <- setDT(dat_world)[,lapply(.SD, sum), by=v_grouping]
+# Combine with regions
+dat_agg <- rbind(dat_agg, dat_world)
+
 # Transform into fractions
+dat_agg <- as.data.frame(dat_agg)
 dat_agg[, v_cod] <- round(dat_agg[, v_cod] / rowSums(dat_agg[, v_cod], na.rm = TRUE), 5)
 dat_agg$Variable <- "Fraction"
 
