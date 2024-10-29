@@ -48,7 +48,7 @@ p %>%
   theme(strip.text = element_blank()) # legend.direction = "horizontal", legend.position = "bottom") 
 ```
 
-```{r allRegions1to9y, fig.height = 8, fig.width=12}
+```{r allRegions1to9y, fig.height = 10, fig.width=14}
 p <- dat %>%
   filter(AgeGroup %in% c("01to04y", "05to09y") & Sex == "Total") %>% 
   filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
@@ -80,7 +80,7 @@ p %>%
 ```
 
 
-```{r allRegions15to24yF, fig.height = 12}
+```{r allRegions15to24yF, fig.height = 10, fig.width=14}
 p <- dat %>%
   filter(AgeGroup %in% c("15to19y", "20to24y") & Sex == "Female") %>% 
   filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
@@ -103,13 +103,13 @@ p %>%
         title = "15-19y and 20-24y F",
         subtitle = "2000-2021") +
   theme_bw() +
-  facet_wrap(~Region, scales = "free", ncol = 2) +
+  facet_wrap(~Region, scales = "free", ncol = 4) +
   scale_fill_manual(values = c("#8C2981FF","#FA7F5EFF", "grey68"), name = "") + 
   theme(legend.direction = "horizontal", legend.position = "bottom") 
 ```
 
 
-```{r allRegions15to24yM, fig.height = 12}
+```{r allRegions15to24yM, fig.height = 10, fig.width=14}
 p <- dat %>%
   filter(AgeGroup %in% c("15to19y", "20to24y") & Sex == "Male") %>% 
   filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
@@ -132,7 +132,7 @@ p %>%
         title = "15-19y and 20-24y M",
         subtitle = "2000-2021") +
   theme_bw() +
-  facet_wrap(~Region, scales = "free", ncol = 2) +
+  facet_wrap(~Region, scales = "free", ncol = 4) +
   scale_fill_manual(values = c("#8C2981FF","#FA7F5EFF", "grey68"), name = "") + 
   theme(legend.direction = "horizontal", legend.position = "bottom") 
 ```

@@ -6,6 +6,8 @@ See `./data/classification-keys/GHE-CACODE-cause-mapping.csv` for mapping of GHE
 
 Figures and tables were generated from the code in `Rmd` files. Click links to `md` files below to see tables and figures compiled with notes.
 
+[boxes.md](https://github.com/hallieeilerts/Comparison-CACODE-GHE/blob/main/boxes.md): Box plots with rates by region (1-4y and 5-9y; 15-19y and 20-24y) for GHE and CA CODE
+
 [tables.md](https://github.com/hallieeilerts/Comparison-CACODE-GHE/blob/main/tables.md): Comparison of GHE and CA CODE mean deaths and CSMFs for 2000-2021 by region for 5-9y, 10-14y, 15-19y
 
 [trends.md](https://github.com/hallieeilerts/Comparison-CACODE-GHE/blob/main/trends.md): Trends in CSMFs and age continuity (1-4y to 5-9y and 15-19y to 20-24y) for GHE and CA CODE
