@@ -1,0 +1,138 @@
+---
+title: "box plots"
+output:
+  #html_document: default
+  rmarkdown::github_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(ggplot2)
+library(tidyverse)
+dat <- readRDS("./gen/rates.rds")
+v_cod_order <- c("Measles", "Maternal", 
+                 "Intrapartum", "Preterm","SepsisMening", "Tetanus", "MeningEnceph" ,
+                 "HIV", "ARI","LRI",  "TB", "Diarrhoeal", "Malaria", "OtherCMPN",
+                "Congenital", "Cardiovascular", "Digestive", "Neoplasms", "OtherNCD",
+                "InterpVio","SelfHarm", "Drowning", "RTI", "OtherInj", "NatDis", "CollectVio",
+                "COVID19","OtherCOVID19")
+dat$COD <- factor(dat$COD, levels = v_cod_order)
+```
+
+
+```{r SSA1to9y, include = FALSE}
+p <- dat %>%
+  filter(AgeGroup %in% c("01to04y", "05to09y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(!(COD %in% c("ARI", "MeningEnceph"))) %>%
+  filter(AdminLevel == "National" & Region == "Sub-Saharan Africa") %>% 
+  mutate(CACODE = rate_cacode, GHE = rate_ghe) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  mutate(SourceAge = ifelse(AgeGroup == "01to04y", "01to04y", "05to09y CA CODE")) %>%
+  mutate(SourceAge = ifelse(AgeGroup == "05to09y" & Source == "GHE", "05to09y GHE", SourceAge)) 
+p %>%
+  ggplot() + 
+  geom_boxplot(aes(x=value, y = COD, fill =  SourceAge), outlier.shape = NA) +
+  labs(x="Rate", y= "",
+        subtitle = "2000-2021",
+        title = p %>% distinct(Region)) +
+  theme_bw() +
+  scale_fill_manual(values = c("grey68","#8C2981FF","#FA7F5EFF"), name = "") + 
+  coord_cartesian(xlim = c(0, 0.007)) +
+  theme(strip.text = element_blank()) # legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+```{r allRegions1to9y, fig.height = 8, fig.width=12}
+p <- dat %>%
+  filter(AgeGroup %in% c("01to04y", "05to09y") & Sex == "Total") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(!(COD %in% c("ARI", "MeningEnceph"))) %>%
+  filter(AdminLevel == "National") %>%
+  #filter(AdminLevel == "National" | Name == "World") %>%
+  #mutate(Region = ifelse(Name == "World", "World", Region)) %>%
+  mutate(CACODE = rate_cacode, GHE = rate_ghe) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  mutate(SourceAge = ifelse(AgeGroup == "01to04y", "01to04y", "05to09y CA CODE")) %>%
+  mutate(SourceAge = ifelse(AgeGroup == "05to09y" & Source == "GHE", "05to09y GHE", SourceAge)) %>%
+  mutate(value = value*1000) %>%
+  group_by(Region, AgeGroup, Source, COD) #%>% mutate(value2 = filter_lims(value))
+p %>%
+  ggplot() + 
+  geom_boxplot(aes(x=value, y = COD, fill =  SourceAge), outliers = FALSE) +
+  labs(x="mx per 1,000", y= "",
+        title = "1-4y and 5-9y",
+        subtitle = "2000-2021") +
+  theme_bw() +
+  facet_wrap(~Region, scales = "free", ncol = 4) +
+  scale_fill_manual(values = c("grey68","#8C2981FF","#FA7F5EFF"), name = "") + 
+  theme(legend.direction = "horizontal", legend.position = "bottom") 
+
+```
+
+
+```{r allRegions15to24yF, fig.height = 12}
+p <- dat %>%
+  filter(AgeGroup %in% c("15to19y", "20to24y") & Sex == "Female") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(!(COD %in% c("ARI", "MeningEnceph"))) %>%
+  filter(AdminLevel == "National") %>%
+  mutate(CACODE = rate_cacode, GHE = rate_ghe) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  mutate(SourceAge = ifelse(AgeGroup == "20to24y", "20to24y", "15to19y CA CODE")) %>%
+  mutate(SourceAge = ifelse(AgeGroup == "15to19y" & Source == "GHE", "15to19y GHE", SourceAge)) %>%
+  mutate(value = value*1000) %>%
+  group_by(Region, AgeGroup, Source, COD) #%>% mutate(value2 = filter_lims(value))
+p %>%
+  ggplot() + 
+  geom_boxplot(aes(x=value, y = COD, fill =  SourceAge), outliers = FALSE) +
+  labs(x="mx per 1,000", y= "",
+        title = "15-19y and 20-24y F",
+        subtitle = "2000-2021") +
+  theme_bw() +
+  facet_wrap(~Region, scales = "free", ncol = 2) +
+  scale_fill_manual(values = c("#8C2981FF","#FA7F5EFF", "grey68"), name = "") + 
+  theme(legend.direction = "horizontal", legend.position = "bottom") 
+```
+
+
+```{r allRegions15to24yM, fig.height = 12}
+p <- dat %>%
+  filter(AgeGroup %in% c("15to19y", "20to24y") & Sex == "Male") %>% 
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(!(COD %in% c("ARI", "MeningEnceph"))) %>%
+  filter(AdminLevel == "National") %>%
+  mutate(CACODE = rate_cacode, GHE = rate_ghe) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","Region","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  mutate(SourceAge = ifelse(AgeGroup == "20to24y", "20to24y", "15to19y CA CODE")) %>%
+  mutate(SourceAge = ifelse(AgeGroup == "15to19y" & Source == "GHE", "15to19y GHE", SourceAge)) %>%
+  mutate(value = value*1000) %>%
+  group_by(Region, AgeGroup, Source, COD) #%>% mutate(value2 = filter_lims(value))
+p %>%
+  ggplot() + 
+  geom_boxplot(aes(x=value, y = COD, fill =  SourceAge), outliers = FALSE) +
+  labs(x="mx per 1,000", y= "",
+        title = "15-19y and 20-24y M",
+        subtitle = "2000-2021") +
+  theme_bw() +
+  facet_wrap(~Region, scales = "free", ncol = 2) +
+  scale_fill_manual(values = c("#8C2981FF","#FA7F5EFF", "grey68"), name = "") + 
+  theme(legend.direction = "horizontal", legend.position = "bottom") 
+```
