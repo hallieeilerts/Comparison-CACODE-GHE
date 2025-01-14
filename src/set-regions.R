@@ -14,10 +14,12 @@ key_region_u20_IGME <- read.csv("./data/classification-keys/20210407-RegionClass
 ## SDG region classification
 
 dat1 <- key_region_u20_WHO
-dat1 <- dat1[, names(dat1) %in% c("dimensionmembercode", "whoname", "sdg1")]
+dat1 <- dat1[, names(dat1) %in% c("dimensionmembercode", "whoname", "sdg1", "wbinc13")]
 # Drop rows without an iso3 code
+# subset(dat1, dimensionmembercode == "")
 dat1 <- subset(dat1, dimensionmembercode != "")
 # Drop rows without an SDG region
+#subset(dat1, sdg1 == "")
 dat1 <- subset(dat1, sdg1 != "")
 # Simplify SDG region labels
 dat1$SDGregion <- as.character(dat1$sdg1)
@@ -51,6 +53,7 @@ names(dat2)[names(dat2) == "ISO3Code"] <- "iso3"
 ## Combine region reporting schemes
 
 dat <- merge(dat1, dat2, by = c("iso3"), all = TRUE)
+
 
 # Save output(s) ----------------------------------------------------------
 

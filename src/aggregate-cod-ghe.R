@@ -11,7 +11,7 @@ load("./data/ghe/GHE2021_deaths.RData")
 ## GHE causes mapped to COD categories
 # Indicators included for (i) parent_category: CODs that are an umbrella category for other CODs,
 # (ii) CODs that were not listed in GHE2019 Methods pdf and are not included in sum for all deaths
-key <- read.csv("./data/classification-keys/GHE-CACODE-cause-mapping.csv")
+key <- read.csv("./data/classification-keys/GHE-CACODE-cause-mapping_20241023.csv")
 ################################################################################
 
 # Age groups
@@ -75,7 +75,7 @@ fn_causeAgg <- function(dat, key, x){
     dat_agesp$cacodecause <- NA
     dat_agesp[dat_agesp$sex == "Male", "cacodecause"] <- dat_agesp[dat_agesp$sex == "Male", v_COD_mapping_agesp[2]] # Males
     dat_agesp[dat_agesp$sex == "Female", "cacodecause"] <- dat_agesp[dat_agesp$sex == "Female", v_COD_mapping_agesp[1]] # Females
-    dat_agesp[dat_agesp$sex == "Total", "cacodecause"] <- dat_agesp[dat_agesp$sex == "Total", v_COD_mapping_agesp[2]] # Male cod mapping for both sexes combined
+    dat_agesp[dat_agesp$sex == "Total", "cacodecause"] <- dat_agesp[dat_agesp$sex == "Total", v_COD_mapping_agesp[1]] # Female cod mapping for both sexes combined. Includes "Maternal".
     dat_agesp <- dat_agesp[!(names(dat_agesp) %in% v_COD_mapping_agesp)]
   }else{
     # Otherwise, just change name of cause mapping column to cacodecause

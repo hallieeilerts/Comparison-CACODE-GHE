@@ -5,6 +5,7 @@
 #' Clear environment
 rm(list=ls())
 #' Libraries
+library(data.table)
 #' Inputs
 ## CA-CODE 2000-2021 results
 list_csv_files <- list.files(path = "./data/ca-code/",  pattern = "*.csv")
@@ -14,6 +15,8 @@ l_cacode <- lapply(list_csv_files, function(x) read.csv(paste0("./data/ca-code/"
 names(l_cacode) <- sub('\\.csv.*', '', list_csv_files)
 ## GHE 2021 deaths aggregated by CA CODE COD categories
 ghe <- readRDS("./gen/ghe-agg-reg.rds")
+## Region key
+key <- read.csv("./gen/key_region.csv")
 ################################################################################
 
 # Convert to data frame
@@ -35,20 +38,23 @@ dat$AgeGroup[dat$AgeLow == 15 & dat$AgeUp == 19] <-  "15to19y"
 dat$Sex[dat$Sex == "Both"] <- "Total"
 
 # Recode "Maternal" as NA for males instead of 0
-dat$Maternal[dat$Sex %in% c("Male", "Total")] <- NA
+# dat$Maternal[dat$Sex %in% c("Male", "Total")] <- NA
 
 # Remove unnecessary columns
 dat <- dat[,-which(names(dat) %in% c("AgeLow","AgeUp","Model","FragileState","WHOname","UNICEFReportRegion1","UNICEFReportRegion2","Region"))]
 
-## Calculate deaths for 15-19y sex-combined
+# Merge on income region
+dat <- merge(dat, key[,c("iso3","wbinc13")], all.x = TRUE, by.x = "ISO3", by.y = "iso3")
+
+# Calculate deaths for 15-19y sex-combined --------------------------------
 
 dat15to19y <- subset(dat, Variable == "Deaths" & AgeGroup == "15to19y")
 dat15to19y$Sex <- NULL
-# Add Maternal to OtherCMPN and recode Maternal as NA
-dat15to19y$OtherCMPN <- ifelse(!is.na(dat15to19y$Maternal), dat15to19y$Maternal + dat15to19y$OtherCMPN, dat15to19y$OtherCMPN)
-dat15to19y$Maternal <- NA
+# # Add Maternal to OtherCMPN and recode Maternal as NA
+# dat15to19y$OtherCMPN <- ifelse(!is.na(dat15to19y$Maternal), dat15to19y$Maternal + dat15to19y$OtherCMPN, dat15to19y$OtherCMPN)
+# dat15to19y$Maternal <- NA
 # Grouping variables for aggregation
-v_grouping <- c("ISO3", "Year", "AgeGroup", "SDGregion", "Variable","Quantile")
+v_grouping <- c("ISO3", "Year", "AgeGroup", "SDGregion", "wbinc13", "Variable","Quantile")
 v_cod <- names(dat15to19y)[!(names(dat15to19y) %in% v_grouping)]
 # Aggregate deaths over sex
 dat15to19y <- setDT(dat15to19y)[, lapply(.SD,sum), by=v_grouping]
@@ -61,41 +67,68 @@ dat15to19yfrac$Variable <- "Fraction"
 # Add back with all data
 dat <- rbind(dat, dat15to19y, dat15to19yfrac)
 
-## Calculate deaths for regions
+# Aggregate by SDG region -------------------------------------------------
 
 # Delete unnecessary columns prior to aggregation
-v_del <- c("ISO3")
+v_del <- c("ISO3", "wbinc13")
 dat_reg <- as.data.frame(dat)[,!(names(dat) %in% v_del)]
 dat_reg <- subset(dat_reg, Variable == "Deaths")
 # Grouping variables for aggregation
 v_grouping <- c("SDGregion","Sex", "Year", "AgeGroup", "Variable", "Quantile")
 v_cod <- names(dat_reg)[!(names(dat_reg) %in% v_grouping)]
 # Aggregate deaths over regions
-dat_agg <- setDT(dat_reg)[,lapply(.SD, sum), by=v_grouping]
+dat_agg_sdg <- setDT(dat_reg)[,lapply(.SD, sum), by=v_grouping]
 # Create world region
-dat_world <- dat_agg
+dat_world <- dat_agg_sdg
 dat_world$SDGregion <- "World"
 dat_world <- setDT(dat_world)[,lapply(.SD, sum), by=v_grouping]
 # Combine with regions
-dat_agg <- rbind(dat_agg, dat_world)
-
+dat_agg_sdg <- rbind(dat_agg_sdg, dat_world)
 # Transform into fractions
-dat_agg <- as.data.frame(dat_agg)
-dat_agg[, v_cod] <- round(dat_agg[, v_cod] / rowSums(dat_agg[, v_cod], na.rm = TRUE), 5)
-dat_agg$Variable <- "Fraction"
+dat_agg_sdg <- as.data.frame(dat_agg_sdg)
+dat_agg_sdg[, v_cod] <- round(dat_agg_sdg[, v_cod] / rowSums(dat_agg_sdg[, v_cod], na.rm = TRUE), 5)
+dat_agg_sdg$Variable <- "Fraction"
 
-## Combine regional and national deaths
+# Aggregate by income region ----------------------------------------------
 
-# Harmonize national and regional column names
+# Delete unnecessary columns prior to aggregation
 v_del <- c("ISO3", "SDGregion")
+dat_reg <- as.data.frame(dat)[,!(names(dat) %in% v_del)]
+dat_reg <- subset(dat_reg, Variable == "Deaths")
+# Grouping variables for aggregation
+v_grouping <- c("wbinc13","Sex", "Year", "AgeGroup", "Variable", "Quantile")
+v_cod <- names(dat_reg)[!(names(dat_reg) %in% v_grouping)]
+# Aggregate deaths over regions
+dat_agg_inc <- setDT(dat_reg)[,lapply(.SD, sum), by=v_grouping]
+# Transform into fractions
+dat_agg_inc <- as.data.frame(dat_agg_inc)
+dat_agg_inc[, v_cod] <- round(dat_agg_inc[, v_cod] / rowSums(dat_agg_inc[, v_cod], na.rm = TRUE), 5)
+dat_agg_inc$Variable <- "Fraction"
+
+
+# Combine -----------------------------------------------------------------
+
+# Harmonize column names
+
+# National level data
+v_del <- c("ISO3", "SDGregion", "wbinc13")
 dat$Name <- dat$ISO3
 dat$AdminLevel <- "National"
 dat <- as.data.frame(dat)[,!(names(dat) %in% v_del)]
-dat_agg$Name <- dat_agg$SDGregion
-dat_agg$AdminLevel <- "Regional"
-dat_agg <- as.data.frame(dat_agg)[,!(names(dat_agg) %in% v_del)]
+
+# SDG regions
+dat_agg_sdg$Name <- dat_agg_sdg$SDGregion
+dat_agg_sdg$AdminLevel <- "RegionalSDG"
+dat_agg_sdg$AdminLevel[dat_agg_sdg$Name == "World"] <- "Global"
+dat_agg_sdg <- as.data.frame(dat_agg_sdg)[,!(names(dat_agg_sdg) %in% v_del)]
+
+# Income regions
+dat_agg_inc$Name <- dat_agg_inc$wbinc13
+dat_agg_inc$AdminLevel <- "RegionalInc"
+dat_agg_inc <- as.data.frame(dat_agg_inc)[,!(names(dat_agg_inc) %in% v_del)]
+
 # Recombine national and regional
-dat <- rbind(dat, dat_agg)
+dat <- rbind(dat, dat_agg_sdg, dat_agg_inc)
 
 # Only keep fractions
 dat <- subset(dat, Variable == "Fraction")
