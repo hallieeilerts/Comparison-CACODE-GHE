@@ -1,0 +1,1163 @@
+---
+title: "CA CODE and GHE CSMF Comparison"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(ggplot2)
+library(tidyverse)
+library(flextable)
+library(officer)
+library(countrycode)
+library(ggnewscale)
+library(scales)
+library(kableExtra)
+
+dat <- readRDS("C:/Users/HEilerts/Institute of International Programs Dropbox/Hallie Eilerts-Spinelli/CA-CODE/Comparison-CACODE-GHE/gen/rates.rds")
+v_cod_order <- c("Measles", "Maternal", 
+                 "Intrapartum", "Preterm","Sepsis","SepsisMening", "Neonatal", "Tetanus", "MeningEnceph","Meningitis",
+                 "HIV", "ARI","LRI",  "TB", "Diarrhoeal", "Malaria", "OtherCMPN",
+                "Congenital", "Cardiovascular", "Digestive", "Neoplasms", "OtherNCD",
+                "Injuries","InterpVio","SelfHarm", "Drowning", "RTI", "OtherInj","Other", "NatDis", "CollectVio",
+                "COVID19","OtherCOVID19")
+dat$COD <- factor(dat$COD, levels = v_cod_order)
+dat$CountryName <- countrycode(dat$Name, origin = "iso3c", destination = "country.name")
+```
+
+# Summary
+
+* Regional fractions are relatively similar overall
+* Higher HIV from 2000-2015 for GHE
+* Higher malaria for CA CODE for 5-9y and 10-14y
+* Higher maternal for GHE
+* Higher CollectVio for GHE
+  * A small share of global deaths in all ages except 15-19m
+* Large uncertainty in OtherCMPN and OtherNCD for both CA CODE and GHE
+* Non-trivial COVID19 in 2021 for GHE 
+  * 4-5.5% of global deaths for 10-14y, 15-19y
+  * 10-12% of South-East Asia deaths for 5-9y, 10-14y, 15-19y
+
+```{r, eval = FALSE}
+
+dat %>% 
+  filter(AgeGroup %in% "15to19y" & Sex == "Male" & Year == 2021 &COD == "CollectVio") %>%
+  filter(AdminLevel %in% c("Global", "RegionalWHO")) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","WHOregion","Sex","Year", "COD", "frac_ghe", "frac_lb_ghe", "frac_ub_ghe"))) %>% 
+  rename(frac = frac_ghe, frac_lb = frac_lb_ghe, frac_ub = frac_ub_ghe) %>%
+  mutate(Source = "GHE")
+
+dat %>% 
+  filter(Name == "World" & Year == 2021 &COD == "COVID19") %>%
+  filter(AdminLevel %in% c("Global", "RegionalWHO")) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","WHOregion","Sex","Year", "COD", "frac_ghe", "frac_lb_ghe", "frac_ub_ghe"))) %>% 
+  rename(frac = frac_ghe, frac_lb = frac_lb_ghe, frac_ub = frac_ub_ghe) %>%
+  mutate(Source = "GHE")
+
+dat %>% 
+  filter(Name != "World" & Year == 2021 &COD == "COVID19") %>%
+  filter(!(Name == "Africa")) %>%
+  filter(!(AgeGroup %in% c("00to28d", "01to59m"))) %>%
+  filter(Name == "South-East Asia") %>%
+  filter(AdminLevel %in% c("Global", "RegionalWHO")) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","WHOregion","Sex","Year", "COD", "frac_ghe", "frac_lb_ghe", "frac_ub_ghe"))) %>% 
+  rename(frac = frac_ghe, frac_lb = frac_lb_ghe, frac_ub = frac_ub_ghe) %>%
+  mutate(Source = "GHE")
+
+dat %>% 
+  filter(Year == 2021 &COD == "COVID19") %>%
+  filter(!(AgeGroup %in% c("00to28d", "01to59m"))) %>%
+  filter(WHOregion == "Western Pacific") %>%
+  filter(AdminLevel %in% c("National")) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","WHOregion","Sex","Year", "COD", "frac_ghe", "frac_lb_ghe", "frac_ub_ghe"))) %>% 
+  rename(frac = frac_ghe, frac_lb = frac_lb_ghe, frac_ub = frac_ub_ghe) %>%
+  mutate(Source = "GHE") %>%
+  arrange(-frac)
+
+
+```
+
+# 5-9y
+
+## All causes
+
+```{r box05to09y, fig.height = 4.5, fig.width = 9}
+AGE <- "05to09y"
+YEAR <- 2021
+SEX <- "Total"
+
+cacode <- dat %>% 
+  filter(AgeGroup %in% AGE & Sex == SEX & Year == YEAR) %>%
+  filter(AdminLevel %in% c("Global", "RegionalWHO")) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","WHOregion","Sex","Year", "COD", "frac_cacode", "frac_lb_cacode", "frac_ub_cacode"))) %>% 
+  rename(frac = frac_cacode, frac_lb = frac_lb_cacode, frac_ub = frac_ub_cacode) %>%
+  mutate(Source = "CACODE")
+ghe <- dat %>% 
+  filter(AgeGroup %in% AGE & Sex == SEX & Year == YEAR) %>%
+  filter(AdminLevel %in% c("Global", "RegionalWHO")) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","WHOregion","Sex","Year", "COD", "frac_ghe", "frac_lb_ghe", "frac_ub_ghe"))) %>% 
+  rename(frac = frac_ghe, frac_lb = frac_lb_ghe, frac_ub = frac_ub_ghe) %>%
+  mutate(Source = "GHE")
+p <- rbind(cacode, ghe)
+p <- p %>% filter(Name %in% c("Africa","South-East Asia", "World"))
+
+# Create background rectangles
+nFac <- length(unique((p$COD)))
+rects <- data.frame(xmin = head(seq <- seq(0.5, nFac + .5, 1), -1), 
+                    xmax = tail(seq, -1))
+rects$rect_type <- rep(c("a", "c"), nrow(rects))[1:nrow(rects)]
+
+ggplot() + 
+  geom_rect(data = rects, aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf, fill = rect_type)) +
+  scale_fill_manual(values = c("gray90","white"), name = "", guide = "none") + 
+  new_scale_fill() +
+  geom_errorbar(data = p, aes(x=COD, ymin = frac_lb, ymax = frac_ub, color =  Source), position=position_dodge(width = 0.9)) +
+  geom_point(data = p, aes(x=COD, y = frac, color =  Source),  position=position_dodge(width = 0.9))  +
+  labs(y="CSMF", x= "",
+        title = paste("Regional CSMFs", AGE, SEX, YEAR, sep = ", ")) +
+  theme_bw() +
+  facet_wrap(~Name, scales = "free", nrow = 1) +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  theme(legend.direction = "horizontal", legend.position = "bottom",
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        text = element_text(size = 11), 
+        legend.box.spacing = unit(0, "pt"),
+        legend.box.margin=margin(-10,-10,-10,-10)) 
+```
+
+* World fractions relatively similar
+* In Africa, mostly overlapping uncertainty bounds
+  * Higher malaria for CA CODE
+  * Higher OtherInj for GHE
+* In South-East Asia, GHE OtherCMPN higher and OtherNCD lower than CA CODE 
+  * COVID19 10.8% in GHE
+
+
+```{r scatter5to9,  fig.height = 10, fig.width=10}
+AGE <- "05to09y"
+SEX <- "Total"
+
+pnat <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National") &
+           Year <= 2021) %>%
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  filter(!is.na(WHOregion))
+
+# dat_text <- pnat %>%
+#   filter(WHOregion %in% c("Africa", "Eastern Mediterranean", "South-East Asia")) %>%
+#   rowwise() %>%
+#   mutate(denom = max((CACODE+GHE)/2, 0.0001)) %>%
+#   mutate(dif = ifelse(denom > 0, abs(CACODE - GHE)/denom, NA)) %>%
+#   group_by(COD) %>%
+#   summarise(avgdif = mean(dif, na.rm = TRUE)) %>%
+#   mutate(label = sprintf("%.1f",round(avgdif,1)))
+
+dat_text <- pnat %>%
+  rowwise() %>%
+  mutate(numer = (CACODE-GHE)^2) %>%
+  group_by(COD) %>%
+  mutate(denom = n()) %>% 
+  mutate(rmse = sqrt(sum(numer,na.rm=TRUE)/denom)) %>%
+  mutate(label = sprintf("%.2f",round(rmse,2))) %>%
+  select(COD, label) %>% unique
+
+ggplot() + 
+  geom_abline() + 
+  geom_point(dat = pnat, aes(x=CACODE, y = GHE, color = WHOregion), alpha = .7) +
+  geom_text(dat = dat_text, aes(x = Inf, y = Inf, label = label, size = label),
+            hjust = 1.05, vjust = 1.5, show.legend = FALSE) +
+  labs(title = paste("National CSMFs", AGE, SEX, sep = ", ")) +
+  theme_bw() +
+  facet_wrap(~COD, ncol = 4) +
+  theme(legend.direction = "vertical", legend.position = "right",
+        aspect.ratio = 1, legend.title=element_blank()) +
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))
+```
+
+* Highest RMSE for OtherNCD, HIV
+* GHE has higher HIV
+* Large spread in OtherNCD
+
+## HIV
+
+Countries with largest average difference in HIV.
+
+```{r bar5to9hiv,  fig.height = 6, fig.width=9}
+AGE <- "05to09y"
+SEX <- "Total"
+myCOD <- "HIV"
+
+# Highlight COD as white
+v_cod <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  pull(COD) %>% unique
+n_cod <- length(v_cod)
+v_cod <- levels(dat$COD)[levels(dat$COD) %in% v_cod]
+n_highlight <- which(v_cod == myCOD)
+v_col <- hue_pal()(n_cod)
+v_col[n_highlight] <- "#FFFFFF"
+
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  mutate(dif = abs(GHE - CACODE)) %>%
+  mutate(dif = ifelse(COD == myCOD, dif, 0)) %>% 
+  group_by(CountryName) %>%
+  mutate(dif = mean(dif)) %>%
+  mutate(maxdif = max(dif)) %>%
+  arrange(-maxdif) %>%
+  ungroup() %>%
+  mutate(groupRank = dense_rank(-maxdif)) %>% 
+  filter(groupRank <= 5) %>%
+  select(all_of(c("AgeGroup","AdminLevel","CountryName","SDGregion","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  ggplot()  +
+  geom_bar(aes(x=Year,y=value,fill=COD), color = "black", stat = "identity") +
+  labs(title = paste(AGE, SEX, sep = ", "),
+       y= "CSMF") +
+  facet_grid(CountryName~Source) +
+  scale_fill_manual(values = v_col)
+```
+
+## Malaria
+
+Countries with largest average difference in malaria.
+
+```{r bar5to9mal,  fig.height = 6, fig.width=9}
+AGE <- "05to09y"
+SEX <- "Total"
+myCOD <- "Malaria"
+
+# Highlight COD as white
+v_cod <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  pull(COD) %>% unique
+n_cod <- length(v_cod)
+v_cod <- levels(dat$COD)[levels(dat$COD) %in% v_cod]
+n_highlight <- which(v_cod == myCOD)
+v_col <- hue_pal()(n_cod)
+v_col[n_highlight] <- "#FFFFFF"
+
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  mutate(dif = abs(GHE - CACODE)) %>%
+  mutate(dif = ifelse(COD == myCOD, dif, 0)) %>% 
+  group_by(CountryName) %>%
+  mutate(dif = mean(dif)) %>%
+  mutate(maxdif = max(dif)) %>%
+  arrange(-maxdif) %>%
+  ungroup() %>%
+  mutate(groupRank = dense_rank(-maxdif)) %>% 
+  filter(groupRank <= 5) %>%
+  select(all_of(c("AgeGroup","AdminLevel","CountryName","SDGregion","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  ggplot()  +
+  geom_bar(aes(x=Year,y=value,fill=COD), color = "black", stat = "identity") +
+  labs(title = paste(AGE, SEX, sep = ", "),
+       y= "CSMF") +
+  facet_grid(CountryName~Source) +
+  scale_fill_manual(values = v_col)
+```
+
+
+## OtherNCD
+
+High burden countries (top 50% in total deaths in 2010) with largest differences in OtherNCD.
+
+```{r bar5to9otherNCD,  fig.height = 6, fig.width=9}
+AGE <- "05to09y"
+SEX <- "Total"
+myCOD <- "OtherNCD"
+
+# Highlight COD as white
+v_cod <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  pull(COD) %>% unique
+n_cod <- length(v_cod)
+v_cod <- levels(dat$COD)[levels(dat$COD) %in% v_cod]
+n_highlight <- which(v_cod == myCOD)
+v_col <- hue_pal()(n_cod)
+v_col[n_highlight] <- "#FFFFFF"
+
+# Identify high burden countries by age group, sex, for 2010
+df_highburden <- dat %>%
+  filter(AgeGroup == AGE & AdminLevel == "National" & Year == 2010) %>%
+  select(AgeGroup, Name, Sex, total_dths) %>%
+  unique() %>%
+  arrange(AgeGroup, Sex,  -total_dths) %>%
+  group_by(AgeGroup, Sex) %>%
+  mutate(n = 1:n(), total = n(), perrank = n/total) %>%
+  filter(perrank <= 0.5) %>%
+  select(AgeGroup, Name, Sex)
+
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  inner_join(df_highburden, by = join_by(AgeGroup, Name, Sex)) %>% 
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  mutate(dif = ifelse(COD == myCOD, abs(GHE - CACODE), 0 )) %>% 
+  group_by(CountryName) %>%
+  mutate(meandif = mean(dif)) %>%
+  arrange(-meandif) %>% 
+  ungroup() %>%
+  mutate(groupRank = dense_rank(-meandif)) %>% 
+  filter(groupRank <= 5) %>% 
+  select(all_of(c("AgeGroup","AdminLevel","CountryName","SDGregion","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  ggplot()  +
+  geom_bar(aes(x=Year,y=value,fill=COD), color = "black", stat = "identity") +
+  labs(title = paste(AGE, SEX, sep = ", "),
+       y= "CSMF") +
+  facet_grid(CountryName~Source) +
+  scale_fill_manual(values = v_col)
+```
+
+# 10-14y
+
+## All causes
+
+```{r box10to14y, fig.height = 4.5, fig.width = 9}
+AGE <- "10to14y"
+YEAR <- 2021
+SEX <- "Total"
+
+cacode <- dat %>% 
+  filter(AgeGroup %in% AGE & Sex == SEX & Year == YEAR) %>%
+  filter(AdminLevel %in% c("Global", "RegionalWHO")) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","WHOregion","Sex","Year", "COD", "frac_cacode", "frac_lb_cacode", "frac_ub_cacode"))) %>% 
+  rename(frac = frac_cacode, frac_lb = frac_lb_cacode, frac_ub = frac_ub_cacode) %>%
+  mutate(Source = "CACODE")
+ghe <- dat %>% 
+  filter(AgeGroup %in% AGE & Sex == SEX & Year == YEAR) %>%
+  filter(AdminLevel %in% c("Global", "RegionalWHO")) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","WHOregion","Sex","Year", "COD", "frac_ghe", "frac_lb_ghe", "frac_ub_ghe"))) %>% 
+  rename(frac = frac_ghe, frac_lb = frac_lb_ghe, frac_ub = frac_ub_ghe) %>%
+  mutate(Source = "GHE")
+p <- rbind(cacode, ghe)
+p <- p %>% filter(Name %in% c("Africa","South-East Asia", "World"))
+
+# Create background rectangles
+nFac <- length(unique((p$COD)))
+rects <- data.frame(xmin = head(seq <- seq(0.5, nFac + .5, 1), -1), 
+                    xmax = tail(seq, -1))
+rects$rect_type <- rep(c("a", "c"), nrow(rects))[1:nrow(rects)]
+
+ggplot() + 
+  geom_rect(data = rects, aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf, fill = rect_type)) +
+  scale_fill_manual(values = c("gray90","white"), name = "", guide = "none") + 
+  new_scale_fill() +
+  geom_errorbar(data = p, aes(x=COD, ymin = frac_lb, ymax = frac_ub, color =  Source), position=position_dodge(width = 0.9)) +
+  geom_point(data = p, aes(x=COD, y = frac, color =  Source),  position=position_dodge(width = 0.9))  +
+  labs(y="CSMF", x= "",
+        title = paste("Regional CSMFs", AGE, SEX, YEAR, sep = ", ")) +
+  theme_bw() +
+  facet_wrap(~Name, scales = "free", nrow = 1) +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  theme(legend.direction = "horizontal", legend.position = "bottom",
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        text = element_text(size = 11), 
+        legend.box.spacing = unit(0, "pt"),
+        legend.box.margin=margin(-10,-10,-10,-10)) 
+```
+
+* In Africa, higher malaria and OtherCMPN for CA CODE
+  * Higher OtherNCD for GHE
+* In South-East Asia, higher OtherInj for CA CODE
+
+```{r scatter10to14,  fig.height = 10, fig.width=10}
+AGE <- "10to14y"
+SEX <- "Total"
+
+pnat <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National") &
+           Year <= 2021) %>%
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  filter(!is.na(WHOregion))
+
+# # Relative difference
+# dat_text <- pnat %>%
+#   filter(WHOregion %in% c("Africa", "Eastern Mediterranean", "South-East Asia")) %>%
+#   rowwise() %>%
+#   mutate(denom = max((CACODE+GHE)/2, 0.0001)) %>%
+#   mutate(dif = ifelse(denom > 0, abs(CACODE - GHE)/denom, NA)) %>%
+#   group_by(COD) %>%
+#   summarise(avgdif = mean(dif, na.rm = TRUE)) %>%
+#   mutate(label = sprintf("%.1f",round(avgdif,1)))
+
+dat_text <- pnat %>%
+  rowwise() %>%
+  mutate(numer = (CACODE-GHE)^2) %>%
+  group_by(COD) %>%
+  mutate(denom = n()) %>% 
+  mutate(rmse = sqrt(sum(numer,na.rm=TRUE)/denom)) %>%
+  mutate(label = sprintf("%.2f",round(rmse,2))) %>%
+  select(COD, label) %>% unique
+
+ggplot() + 
+  geom_abline() + 
+  geom_point(dat = pnat, aes(x=CACODE, y = GHE, color = WHOregion), alpha = .7) +
+  geom_text(dat = dat_text, aes(x = Inf, y = Inf, label = label, size = label),
+            hjust = 1.05, vjust = 1.5, show.legend = FALSE) +
+  labs(title = paste("National CSMFs",AGE, SEX, sep = ", ")) +
+  theme_bw() +
+  facet_wrap(~COD, ncol = 4) +
+  theme(legend.direction = "vertical", legend.position = "right",
+        aspect.ratio = 1, legend.title=element_blank()) +
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))
+```
+
+* Highest RMSE for OtherCMPN, OtherNCD, HIV
+* GHE has higher HIV
+* CA CODE has higher malaria
+
+## HIV
+
+Countries with largest average difference in HIV.
+
+```{r bar10to14hiv,  fig.height = 6, fig.width=9}
+AGE <- "10to14y"
+SEX <- "Total"
+myCOD <- "HIV"
+
+# Highlight COD as white
+v_cod <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  pull(COD) %>% unique
+n_cod <- length(v_cod)
+v_cod <- levels(dat$COD)[levels(dat$COD) %in% v_cod]
+n_highlight <- which(v_cod == myCOD)
+v_col <- hue_pal()(n_cod)
+v_col[n_highlight] <- "#FFFFFF"
+
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  mutate(dif = abs(GHE - CACODE)) %>%
+  mutate(dif = ifelse(COD == myCOD, dif, 0)) %>% 
+  group_by(CountryName) %>%
+  mutate(dif = mean(dif)) %>%
+  mutate(maxdif = max(dif)) %>%
+  arrange(-maxdif) %>%
+  ungroup() %>%
+  mutate(groupRank = dense_rank(-maxdif)) %>% 
+  filter(groupRank <= 5) %>%
+  select(all_of(c("AgeGroup","AdminLevel","CountryName","SDGregion","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  ggplot()  +
+  geom_bar(aes(x=Year,y=value,fill=COD), color = "black", stat = "identity") +
+  labs(title = paste(AGE, SEX, sep = ", "),
+       y= "CSMF") +
+  facet_grid(CountryName~Source) +
+  scale_fill_manual(values = v_col)
+```
+
+## Malaria
+
+Countries with largest average difference in malaria.
+
+```{r bar10to14malaria,  fig.height = 6, fig.width=9}
+AGE <- "10to14y"
+SEX <- "Total"
+myCOD <- "Malaria"
+
+# Highlight COD as white
+v_cod <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  pull(COD) %>% unique
+n_cod <- length(v_cod)
+v_cod <- levels(dat$COD)[levels(dat$COD) %in% v_cod]
+n_highlight <- which(v_cod == myCOD)
+v_col <- hue_pal()(n_cod)
+v_col[n_highlight] <- "#FFFFFF"
+
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  mutate(dif = abs(GHE - CACODE)) %>%
+  mutate(dif = ifelse(COD == myCOD, dif, 0)) %>% 
+  group_by(CountryName) %>%
+  mutate(dif = mean(dif)) %>%
+  mutate(maxdif = max(dif)) %>%
+  arrange(-maxdif) %>%
+  ungroup() %>%
+  mutate(groupRank = dense_rank(-maxdif)) %>% 
+  filter(groupRank <= 5) %>%
+  select(all_of(c("AgeGroup","AdminLevel","CountryName","SDGregion","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  ggplot()  +
+  geom_bar(aes(x=Year,y=value,fill=COD), color = "black", stat = "identity") +
+  labs(title = paste(AGE, SEX, sep = ", "),
+       y= "CSMF") +
+  facet_grid(CountryName~Source) +
+  scale_fill_manual(values = v_col)
+```
+
+# 15-19y F
+
+## All causes
+
+```{r box15to19yF, fig.height = 4.5, fig.width = 9}
+AGE <- "15to19y"
+YEAR <- 2021
+SEX <- "Female"
+
+cacode <- dat %>% 
+  filter(AgeGroup %in% AGE & Sex == SEX & Year == YEAR) %>%
+  filter(AdminLevel %in% c("Global", "RegionalWHO")) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","WHOregion","Sex","Year", "COD", "frac_cacode", "frac_lb_cacode", "frac_ub_cacode"))) %>% 
+  rename(frac = frac_cacode, frac_lb = frac_lb_cacode, frac_ub = frac_ub_cacode) %>%
+  mutate(Source = "CACODE")
+ghe <- dat %>% 
+  filter(AgeGroup %in% AGE & Sex == SEX & Year == YEAR) %>%
+  filter(AdminLevel %in% c("Global", "RegionalWHO")) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","WHOregion","Sex","Year", "COD", "frac_ghe", "frac_lb_ghe", "frac_ub_ghe"))) %>% 
+  rename(frac = frac_ghe, frac_lb = frac_lb_ghe, frac_ub = frac_ub_ghe) %>%
+  mutate(Source = "GHE")
+p <- rbind(cacode, ghe)
+p <- p %>% filter(Name %in% c("Africa","South-East Asia", "World"))
+
+# Create background rectangles
+nFac <- length(unique((p$COD)))
+rects <- data.frame(xmin = head(seq <- seq(0.5, nFac + .5, 1), -1), 
+                    xmax = tail(seq, -1))
+rects$rect_type <- rep(c("a", "c"), nrow(rects))[1:nrow(rects)]
+
+ggplot() + 
+  geom_rect(data = rects, aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf, fill = rect_type)) +
+  scale_fill_manual(values = c("gray90","white"), name = "", guide = "none") + 
+  new_scale_fill() +
+  geom_errorbar(data = p, aes(x=COD, ymin = frac_lb, ymax = frac_ub, color =  Source), position=position_dodge(width = 0.9)) +
+  geom_point(data = p, aes(x=COD, y = frac, color =  Source),  position=position_dodge(width = 0.9))  +
+  labs(y="CSMF", x= "",
+        title = paste("Regional CSMFs",AGE, SEX, YEAR, sep = ", ")) +
+  theme_bw() +
+  facet_wrap(~Name, scales = "free", nrow = 1) +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  theme(legend.direction = "horizontal", legend.position = "bottom",
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        text = element_text(size = 11), 
+        legend.box.spacing = unit(0, "pt"),
+        legend.box.margin=margin(-10,-10,-10,-10)) 
+```
+
+* In world, higher maternal for GHE
+  * Higher OtherNCD for CA CODE
+* In Africa, higher maternal for GHE
+  * Higher OtherNCD, SelfHarm for CA CODE
+* In South-East Asia, higher OtherCMPN, COVID19 for GHE
+  * Higher OtherNCD, InterpVio for CA CODE
+
+
+```{r scatter15to19F,  fig.height = 10, fig.width=10}
+AGE <- "15to19y"
+SEX <- "Female"
+
+pnat <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National") &
+           Year <= 2021) %>%
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  filter(!is.na(WHOregion))
+
+# Relative difference with regularization
+# # Adding a small constant to denominator to prevent division by very small values
+# dat_text <- pnat %>%
+#   rowwise() %>%
+#   mutate(denom = max((CACODE+GHE)/2, 0.0001)) %>%
+#   mutate(dif = ifelse(denom > 0, abs(CACODE - GHE)/denom, NA)) %>%
+#   group_by(COD) %>%
+#   summarise(avgdif = mean(dif, na.rm = TRUE)) %>%
+#   mutate(label = sprintf("%.1f",round(avgdif,1)))
+dat_text <- pnat %>%
+  rowwise() %>%
+  mutate(numer = (CACODE-GHE)^2) %>%
+  group_by(COD) %>%
+  mutate(denom = n()) %>% 
+  mutate(rmse = sqrt(sum(numer,na.rm=TRUE)/denom)) %>%
+  mutate(label = sprintf("%.2f",round(rmse,2))) %>%
+  select(COD, label) %>% unique
+
+ggplot() + 
+  geom_abline() + 
+  geom_point(dat = pnat, aes(x=CACODE, y = GHE, color = WHOregion), alpha = .7) +
+  geom_text(dat = dat_text, aes(x = Inf, y = Inf, label = label, size = label),
+            hjust = 1.05, vjust = 1.5, show.legend = FALSE) +
+  labs(title = paste("National CSMFs",AGE, SEX, sep = ", ")) +
+  theme_bw() +
+  facet_wrap(~COD, ncol = 4) +
+  theme(legend.direction = "vertical", legend.position = "right",
+        aspect.ratio = 1, legend.title=element_blank()) +
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))
+```
+
+* Highest RMSE for maternal, OtherCMPN, OtherNCD
+
+## Maternal
+
+Countries with largest average difference in maternal.
+
+```{r bar15to19fMaternal,  fig.height = 6, fig.width=9}
+AGE <- "15to19y"
+SEX <- "Female"
+myCOD <- "Maternal"
+
+# Highlight COD as white
+v_cod <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  pull(COD) %>% unique
+n_cod <- length(v_cod)
+v_cod <- levels(dat$COD)[levels(dat$COD) %in% v_cod]
+n_highlight <- which(v_cod == myCOD)
+v_col <- hue_pal()(n_cod)
+v_col[n_highlight] <- "#FFFFFF"
+
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  mutate(dif = abs(GHE - CACODE)) %>%
+  mutate(dif = ifelse(COD == myCOD, dif, 0)) %>% 
+  group_by(CountryName) %>%
+  mutate(dif = mean(dif)) %>%
+  mutate(maxdif = max(dif)) %>%
+  arrange(-maxdif) %>%
+  ungroup() %>%
+  mutate(groupRank = dense_rank(-maxdif)) %>% 
+  filter(groupRank <= 5) %>%
+  select(all_of(c("AgeGroup","AdminLevel","CountryName","SDGregion","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  ggplot()  +
+  geom_bar(aes(x=Year,y=value,fill=COD), color = "black", stat = "identity") +
+  labs(title = paste(AGE, SEX, sep = ", "),
+       y= "CSMF") +
+  facet_grid(CountryName~Source) +
+  scale_fill_manual(values = v_col)
+```
+
+# 15-19y M
+
+## All causes
+
+```{r box15to19yM, fig.height = 4.5, fig.width = 9}
+AGE <- "15to19y"
+YEAR <- 2021
+SEX <- "Male"
+
+cacode <- dat %>% 
+  filter(AgeGroup %in% AGE & Sex == SEX & Year == YEAR) %>%
+  filter(AdminLevel %in% c("Global", "RegionalWHO")) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","WHOregion","Sex","Year", "COD", "frac_cacode", "frac_lb_cacode", "frac_ub_cacode"))) %>% 
+  rename(frac = frac_cacode, frac_lb = frac_lb_cacode, frac_ub = frac_ub_cacode) %>%
+  mutate(Source = "CACODE")
+ghe <- dat %>% 
+  filter(AgeGroup %in% AGE & Sex == SEX & Year == YEAR) %>%
+  filter(AdminLevel %in% c("Global", "RegionalWHO")) %>%
+  select(all_of(c("AgeGroup","AdminLevel","Name","WHOregion","Sex","Year", "COD", "frac_ghe", "frac_lb_ghe", "frac_ub_ghe"))) %>% 
+  rename(frac = frac_ghe, frac_lb = frac_lb_ghe, frac_ub = frac_ub_ghe) %>%
+  mutate(Source = "GHE")
+p <- rbind(cacode, ghe)
+p <- p %>% filter(Name %in% c("Africa","South-East Asia", "World"))
+
+# Create background rectangles
+nFac <- length(unique((p$COD)))
+rects <- data.frame(xmin = head(seq <- seq(0.5, nFac + .5, 1), -1), 
+                    xmax = tail(seq, -1))
+rects$rect_type <- rep(c("a", "c"), nrow(rects))[1:nrow(rects)]
+
+ggplot() + 
+  geom_rect(data = rects, aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf, fill = rect_type)) +
+  scale_fill_manual(values = c("gray90","white"), name = "", guide = "none") + 
+  new_scale_fill() +
+  geom_errorbar(data = p, aes(x=COD, ymin = frac_lb, ymax = frac_ub, color =  Source), position=position_dodge(width = 0.9)) +
+  geom_point(data = p, aes(x=COD, y = frac, color =  Source),  position=position_dodge(width = 0.9))  +
+  labs(y="CSMF", x= "",
+        title = paste("Regional CSMFs",AGE, SEX, YEAR, sep = ", ")) +
+  theme_bw() +
+  facet_wrap(~Name, scales = "free", nrow = 1) +
+  scale_color_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
+  theme(legend.direction = "horizontal", legend.position = "bottom",
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        text = element_text(size = 11), 
+        legend.box.spacing = unit(0, "pt"),
+        legend.box.margin=margin(-10,-10,-10,-10)) 
+```
+
+* In world, higher TB for CA CODE
+  * Higher CollectVio for GHE
+* In Africa, higher CollectVio for GHE
+* In South-East Asia, higher TB, digestive, OtherNCD, InterpVio for CA CODE
+  * High COVID19 for GHE
+
+```{r scatter15to19M,  fig.height = 10, fig.width=10}
+AGE <- "15to19y"
+SEX <- "Male"
+
+pnat <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National") &
+           Year <= 2021) %>%
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  filter(!is.na(WHOregion))
+
+# Relative difference with regularization
+# Adding a small constant to denominator to prevent division by very small values
+# dat_text <- pnat %>%
+#   rowwise() %>%
+#   mutate(denom = max((CACODE + GHE)/2, 0.0001)) %>% 
+#   mutate(reldif = ifelse(denom > 0, (abs(CACODE - GHE))/denom, NA)) %>%
+#   group_by(COD) %>%
+#   summarise(avgdif = mean(reldif, na.rm = TRUE)) %>%
+#   mutate(label = sprintf("%.1f",round(avgdif,1)))
+
+dat_text <- pnat %>%
+  rowwise() %>%
+  mutate(numer = (CACODE-GHE)^2) %>%
+  group_by(COD) %>%
+  mutate(denom = n()) %>% 
+  mutate(rmse = sqrt(sum(numer,na.rm=TRUE)/denom)) %>%
+  mutate(label = sprintf("%.2f",round(rmse,2))) %>%
+  select(COD, label) %>% unique
+
+ggplot() + 
+  geom_abline() + 
+  geom_point(dat = pnat, aes(x=CACODE, y = GHE, color = WHOregion), alpha = .7) +
+  geom_text(dat = dat_text, aes(x = Inf, y = Inf, label = label, size = label),
+            hjust = 1.05, vjust = 1.5, show.legend = FALSE) +
+  labs(title = paste("National CSMFs",AGE, SEX, sep = ", ")) +
+  theme_bw() +
+  facet_wrap(~COD, ncol = 4) +
+  theme(legend.direction = "vertical", legend.position = "right",
+        aspect.ratio = 1, legend.title=element_blank()) +
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))
+```
+
+* Highest RMSE for InterpVio
+  * CA CODE has much higher InterpVio in Eastern Mediterranean
+* GHE has higher CollectVio
+
+## CollectVio
+
+High burden countries (top 50% in total deaths in 2010) with largest differences in CollectVio.
+
+```{r bar15to19mCollectVio,  fig.height = 6, fig.width=9}
+AGE <- "15to19y"
+SEX <- "Male"
+myCOD <- "CollectVio"
+
+# Highlight COD as white
+v_cod <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19", "Maternal"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  pull(COD) %>% unique
+n_cod <- length(v_cod)
+v_cod <- levels(dat$COD)[levels(dat$COD) %in% v_cod]
+n_highlight <- which(v_cod == myCOD)
+v_col <- hue_pal()(n_cod)
+v_col[n_highlight] <- "#FFFFFF"
+
+# Identify high burden countries by age group, sex, for 2010
+df_highburden <- dat %>%
+  filter(AgeGroup == AGE & AdminLevel == "National" & Year == 2010) %>%
+  select(AgeGroup, Name, Sex, total_dths) %>%
+  unique() %>%
+  arrange(AgeGroup, Sex,  -total_dths) %>%
+  group_by(AgeGroup, Sex) %>%
+  mutate(n = 1:n(), total = n(), perrank = n/total) %>%
+  filter(perrank <= 0.5) %>%
+  select(AgeGroup, Name, Sex)
+
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19", "Maternal"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  inner_join(df_highburden, by = join_by(AgeGroup, Name, Sex)) %>% 
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  mutate(dif = ifelse(COD == myCOD, abs(GHE - CACODE), 0 )) %>% 
+  group_by(CountryName) %>%
+  mutate(meandif = mean(dif)) %>%
+  arrange(-meandif) %>% 
+  ungroup() %>%
+  mutate(groupRank = dense_rank(-meandif)) %>% 
+  filter(groupRank <= 5) %>% 
+  select(all_of(c("AgeGroup","AdminLevel","CountryName","SDGregion","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  ggplot()  +
+  geom_bar(aes(x=Year,y=value,fill=COD), color = "black", stat = "identity") +
+  labs(title = paste(AGE, SEX, sep = ", "),
+       y= "CSMF") +
+  facet_grid(CountryName~Source) +
+  scale_fill_manual(values = v_col)
+```
+
+## InterpVio
+
+Countries with largest average difference in InterpVio.
+
+```{r bar15to19mInterpVio,  fig.height = 6, fig.width=9}
+AGE <- "15to19y"
+SEX <- "Male"
+myCOD <- "InterpVio"
+
+# Highlight COD as white
+v_cod <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19", "Maternal"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  pull(COD) %>% unique
+n_cod <- length(v_cod)
+v_cod <- levels(dat$COD)[levels(dat$COD) %in% v_cod]
+n_highlight <- which(v_cod == myCOD)
+v_col <- hue_pal()(n_cod)
+v_col[n_highlight] <- "#FFFFFF"
+
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19", "Maternal"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  mutate(dif = abs(GHE - CACODE)) %>%
+  mutate(dif = ifelse(COD == myCOD, dif, 0)) %>% 
+  group_by(CountryName) %>%
+  mutate(dif = mean(dif)) %>%
+  mutate(maxdif = max(dif)) %>%
+  arrange(-maxdif) %>%
+  ungroup() %>%
+  mutate(groupRank = dense_rank(-maxdif)) %>% 
+  filter(groupRank <= 5) %>%
+  select(all_of(c("AgeGroup","AdminLevel","CountryName","SDGregion","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  ggplot()  +
+  geom_bar(aes(x=Year,y=value,fill=COD), color = "black", stat = "identity") +
+  labs(title = paste(AGE, SEX, sep = ", "),
+       y= "CSMF") +
+  facet_grid(CountryName~Source) +
+  scale_fill_manual(values = v_col)
+```
+
+InterpVio in Americas.
+
+```{r bar15to19mInterpVio2,  fig.height = 6, fig.width=9}
+AGE <- "15to19y"
+SEX <- "Male"
+myCOD <- "InterpVio"
+
+# Highlight COD as white
+v_cod <- dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19", "Maternal"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  pull(COD) %>% unique
+n_cod <- length(v_cod)
+v_cod <- levels(dat$COD)[levels(dat$COD) %in% v_cod]
+n_highlight <- which(v_cod == myCOD)
+v_col <- hue_pal()(n_cod)
+v_col[n_highlight] <- "#FFFFFF"
+
+dat %>%
+  filter(!(COD %in% c("COVID19", "OtherCOVID19", "Maternal"))) %>%
+  filter(AgeGroup %in% AGE & Sex == SEX & 
+           AdminLevel %in% c("National")) %>%
+  mutate(CACODE = frac_cacode, GHE = frac_ghe) %>%
+  mutate(dif = GHE) %>%
+  mutate(dif = ifelse(COD == myCOD, dif, 0)) %>% 
+  group_by(CountryName) %>%
+  mutate(dif = mean(dif)) %>%
+  mutate(maxdif = max(dif)) %>%
+  arrange(-maxdif) %>%
+  ungroup() %>%
+  mutate(groupRank = dense_rank(-maxdif)) %>% 
+  filter(groupRank <= 5 | CountryName %in% "Mexico") %>%
+  select(all_of(c("AgeGroup","AdminLevel","CountryName","SDGregion","Sex","Year", "COD", "CACODE","GHE"))) %>% 
+  pivot_longer(
+    cols = all_of(c("CACODE","GHE")),
+    names_to = "Source"
+  ) %>% 
+  ggplot()  +
+  geom_bar(aes(x=Year,y=value,fill=COD), color = "black", stat = "identity") +
+  labs(title = paste(AGE, SEX, sep = ", "),
+       y= "CSMF") +
+  facet_grid(CountryName~Source) +
+  scale_fill_manual(values = v_col)
+```
+
+# CA CODE methods
+
+## 5-9y
+
+```{r tab5to9y}
+colvio_natdis <- data.frame(COD = c("CollectVio, NatDis", "CollectVio, NatDis"),
+                     Split = c("Endemic", "Epidemic"),
+                     Method = c("Squeezed pro-rata into crisis-free deaths",
+                                "Distributed to difference between crisis-free and crisis-included envelopes"),
+                     Details = c("Add endemic ColVio and NatDis to crisis-free deaths. Calculate fractions. Squeeze other causes into remaining fraction.",
+                                 "Calculate proportion of epidemic deaths that are ColVio versus NatDis. Multiply proportion of colvio/natdis deaths by difference between all-cause and crisis-free envelopes."),
+                     Source = c("")) 
+# Note: if there is a difference between crisis-included and crisis-free envelopes and epi_colvio nd epi_natdis are both zero, all-cause epidemic deaths distributed to all causes
+
+modeled1 <- data.frame(COD = c("Congenital", "Diarrhoeal", "Digestive", "Drowning"),
+                       Split = c(""),
+                       Method = c("Modeled"),
+                       Details = c(""),
+                       Source = c(""))
+
+hiv <- data.frame(COD = c("HIV"),
+                  Split = c(""),
+                  Method = c("Squeezed into OtherCMPN"),
+                  Details = c("Multiply OtherCMPN fraction by crisis-free deaths. Subtract single-cause (i.e., HIV, measles, TB) deaths from OtherCMPN and calculate residual OtherCMPN fraction. If residual OtherCMPN is less than minimum allowed fraction (0.0455), calculate scaling factor by dividing OtherCMPN deaths by single-cause deaths and minimum OtherCMPN. Multiply scaling factor by single-causes. Calculate single-cause fractions from crisis-free deaths."),
+                  Source = c("UNAIDS"))
+
+lri <- data.frame(COD = c("LRI"),
+                  Split = c(""),
+                  Method = c("Modeled"),
+                  Details = c(""),
+                  Source = c(""))
+
+malaria <- data.frame(COD = c("Malaria","Malaria"),
+                  Split = c("HMM","LMM"),
+                  Method = c("Modeled and capped at country-year level for 1-59m",
+                             "Set as zero"),
+                  Details = c("If malaria case count for 5-19y is zero, set fraction as zero and re-calculate other fractions pro-rata.",""),
+                  Source = c("WMP for case count", ""))
+
+measles <- data.frame(COD = c("Measles", "Measles"),
+                  Split = c("Endemic", "Epidemic"),
+                  Method = c("Squeezed into OtherCMPN",
+                             "Added to crisis-included deaths"),
+                  Details = c("Multiply OtherCMPN fraction by crisis-free deaths. Subtract single-cause (i.e., HIV, measles, TB) deaths from OtherCMPN and calculate residual OtherCMPN fraction. If residual OtherCMPN is less than minimum allowed fraction (0.0455), calculate scaling factor by dividing OtherCMPN deaths by single-cause deaths and minimum OtherCMPN. Multiply scaling factor by single-causes. Calculate single-cause fractions from crisis-free deaths.",
+                              "Back-calculate denominator of all-cause crisis-included mortality rate, add epidemic measles deaths, recalculate all-cause crisis-included rate."),
+                  Source = c("WHO Immunization, Vaccinations and Biologicals Programme", "WHO Immunization, Vaccinations and Biologicals Programme"))
+# Note: not sure how data preparation for endemic and epidemic measles happens. Because sometimes epidemic is negative and sum of endemic and epidemic is negative. When this happens, it is recoded as the negative of endemic measles so that total measles is never less than 0.
+
+modeled2 <- data.frame(COD = c("Neoplasms", "OtherCMPN", "OtherNCD", "OtherInj"),
+                       Split = c(""),
+                       Method = c("Modeled"),
+                       Details = c(""),
+                       Source = c(""))
+
+tb <- data.frame(COD = c("TB", "TB"),
+                  Split = c("Non-respiratory", "Respiratory"),
+                  Method = c("Squeezed into OtherCMPN",
+                             "Squeezed into LRI"),
+                  Details = c("Multiply OtherCMPN fraction by crisis-free deaths. Subtract single-cause (i.e., HIV, measles, TB) deaths from OtherCMPN and calculate residual OtherCMPN fraction. If residual OtherCMPN is less than minimum allowed fraction (0.0455), calculate scaling factor by dividing OtherCMPN deaths by single-cause deaths and minimum OtherCMPN. Multiply scaling factor by single-causes. Calculate single-cause fractions from crisis-free deaths.",
+                              "Multiply LRI fraction by crisis-free deaths. Subtract respiratory TB deaths from LRI, and calculate residual LRI fraction. If residual LRI is less than minimum allowed fraction (0.0269), calculate scaling factor by dividing LRI deaths by respiratory TB deaths. Multiply scaling factor by respiratory TB. Calculate respiratory TB fraction from crisis-free deaths."),
+                  Source = c("WHO Immunization, Vaccinations and Biologicals Programme", "WHO Immunization, Vaccinations and Biologicals Programme"))
+
+modeled3 <- data.frame(COD = c("RTI"),
+                       Split = c(""),
+                       Method = c("Modeled"),
+                       Details = c(""),
+                       Source = c(""))
+
+methods5to9 <- rbind(colvio_natdis, modeled1, hiv, lri, malaria, measles, modeled2, tb, modeled3)
+
+kbl(methods5to9, align = c("l","c","c","c","c")) %>%
+  kable_paper(full_width = F) %>%
+  column_spec(1, bold = T) %>%
+  collapse_rows(columns = c(1,5),  valign = 'middle') 
+```
+
+## 10-14y
+
+```{r tab10to14y}
+colvio_natdis <- data.frame(COD = c("CollectVio, NatDis", "CollectVio, NatDis"),
+                     Split = c("Endemic", "Epidemic"),
+                     Method = c("Squeezed pro-rata into crisis-free deaths",
+                                "Distributed to difference between crisis-free and crisis-included envelopes"),
+                     Details = c("Add endemic ColVio and NatDis to crisis-free deaths. Calculate fractions. Squeeze other causes into remaining fraction.",
+                                 "Calculate proportion of epidemic deaths that are ColVio versus NatDis. Multiply proportion of colvio/natdis deaths by difference between all-cause and crisis-free envelopes."),
+                     Source = c(" ")) 
+# Note: if there is a difference between crisis-included and crisis-free envelopes and epi_colvio nd epi_natdis are both zero, all-cause epidemic deaths distributed to all causes
+
+modeled1 <- data.frame(COD = c("Diarrhoeal", "Digestive", "Drowning"),
+                       Split = c(""),
+                       Method = c("Modeled"),
+                       Details = c(""),
+                       Source = c(""))
+
+hiv <- data.frame(COD = c("HIV"),
+                  Split = c(""),
+                  Method = c("Squeezed into OtherCMPN"),
+                  Details = c("Multiply OtherCMPN fraction by crisis-free deaths. Subtract single-cause (i.e., HIV, TB) deaths from OtherCMPN and calculate residual OtherCMPN fraction. If residual OtherCMPN is less than minimum allowed fraction (0.0332), calculate scaling factor by dividing OtherCMPN deaths by single-cause deaths and minimum OtherCMPN. Multiply scaling factor by single-causes. Calculate single-cause fractions from crisis-free deaths."),
+                  Source = c("UNAIDS"))
+
+lri <- data.frame(COD = c("LRI"),
+                  Split = c(""),
+                  Method = c("Modeled"),
+                  Details = c(""),
+                  Source = c(""))
+
+malaria <- data.frame(COD = c("Malaria","Malaria"),
+                  Split = c("HMM","LMM"),
+                  Method = c("Modeled and capped at country-year level for 1-59m",
+                             "Set as zero"),
+                  Details = c("If malaria case count for 5-19y is zero, set fraction as zero and re-calculate other fractions pro-rata.",""),
+                  Source = c("WMP for case count", ""))
+
+modeled2 <- data.frame(COD = c("Neoplasms", "OtherCMPN", "OtherNCD", "OtherInj"),
+                       Split = c(""),
+                       Method = c("Modeled"),
+                       Details = c(""),
+                       Source = c(""))
+
+tb <- data.frame(COD = c("TB", "TB"),
+                  Split = c("Non-respiratory", "Respiratory"),
+                  Method = c("Squeezed into OtherCMPN",
+                             "Squeezed into LRI"),
+                  Details = c("Multiply OtherCMPN fraction by crisis-free deaths. Subtract single-cause (i.e., HIV, TB) deaths from OtherCMPN and calculate residual OtherCMPN fraction. If residual OtherCMPN is less than minimum allowed fraction (0.0332), calculate scaling factor by dividing OtherCMPN deaths by single-cause deaths and minimum OtherCMPN. Multiply scaling factor by single-causes. Calculate single-cause fractions from crisis-free deaths.",
+                              "Multiply LRI fraction by crisis-free deaths. Subtract respiratory TB deaths from LRI, and calculate residual LRI fraction. If residual LRI is less than minimum allowed fraction (0.0197), calculate scaling factor by dividing LRI deaths by respiratory TB deaths. Multiply scaling factor by respiratory TB. Calculate respiratory TB fraction from crisis-free deaths."),
+                  Source = c("WHO Immunization, Vaccinations and Biologicals Programme", "WHO Immunization, Vaccinations and Biologicals Programme"))
+
+modeled3 <- data.frame(COD = c("RTI"),
+                       Split = c(""),
+                       Method = c("Modeled"),
+                       Details = c(""),
+                       Source = c(""))
+
+methods10to14 <- rbind(colvio_natdis, modeled1, hiv, lri, malaria, modeled2, tb, modeled3)
+
+kbl(methods10to14, align = c("l","c","c","c","c")) %>%
+  kable_paper(full_width = F) %>%
+  column_spec(1, bold = T) %>%
+  collapse_rows(columns = c(1,5),  valign = 'middle') 
+```
+
+## 15-19y
+
+```{r tab15to19y}
+
+modeled1 <- data.frame(COD = c("Cardiovascular"),
+                       Split = c(""),
+                       Method = c("Modeled"),
+                       Details = c(""),
+                       Source = c(""))
+
+
+colvio_natdis <- data.frame(COD = c("CollectVio, NatDis", "CollectVio, NatDis"),
+                     Split = c("Endemic", "Epidemic"),
+                     Method = c("Squeezed pro-rata into crisis-free deaths",
+                                "Distributed to difference between crisis-free and crisis-included envelopes"),
+                     Details = c("Add endemic ColVio and NatDis to crisis-free deaths. Calculate fractions. Squeeze other causes into remaining fraction.",
+                                 "Calculate proportion of epidemic deaths that are ColVio versus NatDis. Multiply proportion of colvio/natdis deaths by difference between all-cause and crisis-free envelopes."),
+                     Source = c(" ")) 
+# Note: if there is a difference between crisis-included and crisis-free envelopes and epi_colvio nd epi_natdis are both zero, all-cause epidemic deaths distributed to all causes
+
+modeled2 <- data.frame(COD = c("Digestive", "Drowning"),
+                       Split = c(""),
+                       Method = c("Modeled"),
+                       Details = c(""),
+                       Source = c(""))
+
+hiv <- data.frame(COD = c("HIV"),
+                  Split = c(""),
+                  Method = c("Squeezed into OtherCMPN"),
+                  Details = c("Multiply OtherCMPN fraction by crisis-free deaths. Subtract single-cause (i.e., HIV, TB) deaths from OtherCMPN and calculate residual OtherCMPN fraction. If residual OtherCMPN is less than minimum allowed fraction (0.0332), calculate scaling factor by dividing OtherCMPN deaths by single-cause deaths and minimum OtherCMPN. Multiply scaling factor by single-causes. Calculate single-cause fractions from crisis-free deaths."),
+                  Source = c("UNAIDS"))
+
+modeled3 <- data.frame(COD = c("InterpVio"),
+                       Split = c(""),
+                       Method = c("Modeled"),
+                       Details = c(""),
+                       Source = c(""))
+
+maternal <- data.frame(COD = c("Maternal"),
+                  Split = c("Females"),
+                  Method = c("Modeled"),
+                  Details = c(""),
+                  Source = c(""))
+
+malaria <- data.frame(COD = c("Malaria","Malaria"),
+                  Split = c("HMM","LMM"),
+                  Method = c("Modeled and capped at country-year level for 1-59m",
+                             "Set as zero"),
+                  Details = c("If malaria case count for 5-19y is zero, set fraction as zero and re-calculate other fractions pro-rata.",""),
+                  Source = c("WMP for case count", ""))
+
+modeled4 <- data.frame(COD = c("Neoplasms", "OtherCMPN", "OtherNCD", "OtherInj"),
+                       Split = c(""),
+                       Method = c("Modeled"),
+                       Details = c(""),
+                       Source = c(""))
+
+tb <- data.frame(COD = c("TB", "TB"),
+                  Split = c("Non-respiratory", "Respiratory"),
+                  Method = c("Squeezed into OtherCMPN",
+                             "Squeezed into LRI"),
+                  Details = c("Multiply OtherCMPN fraction by crisis-free deaths. Subtract single-cause (i.e., HIV, TB) deaths from OtherCMPN and calculate residual OtherCMPN fraction. If residual OtherCMPN is less than minimum allowed fraction (0.0332), calculate scaling factor by dividing OtherCMPN deaths by single-cause deaths and minimum OtherCMPN. Multiply scaling factor by single-causes. Calculate single-cause fractions from crisis-free deaths.",
+                              "Multiply LRI fraction by crisis-free deaths. Subtract respiratory TB deaths from LRI, and calculate residual LRI fraction. If residual LRI is less than minimum allowed fraction (0.0197), calculate scaling factor by dividing LRI deaths by respiratory TB deaths. Multiply scaling factor by respiratory TB. Calculate respiratory TB fraction from crisis-free deaths."),
+                  Source = c("WHO Immunization, Vaccinations and Biologicals Programme", "WHO Immunization, Vaccinations and Biologicals Programme"))
+
+modeled5 <- data.frame(COD = c("RTI"),
+                       Split = c(""),
+                       Method = c("Modeled"),
+                       Details = c(""),
+                       Source = c(""))
+
+methods15to19 <- rbind(modeled1, colvio_natdis, modeled2, hiv, modeled3, maternal, modeled4, tb, modeled5)
+
+kbl(methods15to19, align = c("l","c","c","c","c")) %>%
+  kable_paper(full_width = F) %>%
+  column_spec(1, bold = T) %>%
+  collapse_rows(columns = c(1,5),  valign = 'middle') 
+```
+
+
+
