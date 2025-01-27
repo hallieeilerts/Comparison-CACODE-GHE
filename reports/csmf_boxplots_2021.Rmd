@@ -25,7 +25,6 @@ v_cod_order <- c("Measles", "Maternal",
                 "COVID19","OtherCOVID19")
 dat$COD <- factor(dat$COD, levels = v_cod_order)
 dat$CountryName <- countrycode(dat$Name, origin = "iso3c", destination = "country.name")
-
 ```
 
 # COVID-19 in GHE
@@ -52,7 +51,6 @@ p %>%
   theme(legend.direction = "horizontal", legend.position = "bottom",
         strip.text.y.right = element_text(angle = 0), text = element_text(size = 8)) 
 ```
-
 
 # 5-9y
 
@@ -108,7 +106,6 @@ p %>%
   scale_fill_manual(values = c("#8C2981FF","#FA7F5EFF"), name = "") + 
   theme(legend.direction = "horizontal", legend.position = "bottom", text =  element_text(size = 8)) 
 ```
-
 
 # 10-14y
 
@@ -166,7 +163,6 @@ p %>%
   theme(legend.direction = "horizontal", legend.position = "bottom", text =  element_text(size = 8)) 
 ```
 
-
 # 15-19y F
 
 ```{r frac15to19f, fig.height = 10, fig.width=14}
@@ -221,7 +217,6 @@ p %>%
   theme(legend.direction = "horizontal", legend.position = "bottom")  + 
   theme(legend.direction = "horizontal", legend.position = "bottom", text =  element_text(size = 8)) 
 ```
-
 
 # 15-19y M
 
@@ -279,6 +274,3 @@ p %>%
   theme(legend.direction = "horizontal", legend.position = "bottom")  + 
   theme(legend.direction = "horizontal", legend.position = "bottom", text =  element_text(size = 8)) 
 ```
-
-
-

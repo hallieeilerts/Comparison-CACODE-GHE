@@ -8,6 +8,8 @@ rm(list=ls())
 
 #source("./src/check-cod-mapping.R")
 
+source("./src/pull-data.R")
+
 source("./src/set-regions.R")
 
 source("./src/aggregate-cod-ghe.R")

@@ -11,16 +11,18 @@ key_region_u20_WHO  <- read.dta13("./data/classification-keys/20190528-RegionCla
 key_region_u20_IGME <- read.csv("./data/classification-keys/20210407-RegionClassIGME.csv")
 ################################################################################
 
-## SDG region classification
+## WHO region classifications
 
 dat1 <- key_region_u20_WHO
-dat1 <- dat1[, names(dat1) %in% c("dimensionmembercode", "whoname", "sdg1", "wbinc13")]
+dat1 <- dat1[, names(dat1) %in% c("dimensionmembercode", "whoname", "sdg1", "wbinc13", "who_region")]
+
 # Drop rows without an iso3 code
 # subset(dat1, dimensionmembercode == "")
 dat1 <- subset(dat1, dimensionmembercode != "")
-# Drop rows without an SDG region
-#subset(dat1, sdg1 == "")
-dat1 <- subset(dat1, sdg1 != "")
+
+# Replace blanks with NA
+dat1[dat1 == ""] <- NA
+
 # Simplify SDG region labels
 dat1$SDGregion <- as.character(dat1$sdg1)
 dat1$SDGregion[dat1$SDGregion == "Australia and New Zealand (M49)"] <- "Australia and New Zealand"
@@ -33,9 +35,21 @@ dat1$SDGregion[dat1$SDGregion == "Sub-Saharan Africa (M49)"] <- "Sub-Saharan Afr
 dat1$SDGregion[grepl( "Western Asia", dat1$SDGregion, ignore.case = TRUE)] <- "Western Asia and Northern Africa"
 # Delete old region columns
 dat1 <- dat1[,-which(names(dat1) %in% c("sdg1"))]
+
 # Re-label variables
 names(dat1)[names(dat1) == "dimensionmembercode"] <- "iso3"
 names(dat1)[names(dat1) == "whoname"] <- "WHOname"
+names(dat1)[names(dat1) == "who_region"] <- "WHOregion"
+
+# Rows without an SDG region
+subset(dat1, is.na(SDGregion))
+# Rows without a WHO region
+subset(dat1, is.na(WHOregion))
+# Rows without a wb income region
+subset(dat1, is.na(wbinc13))
+
+# Drop rows without an SDG region
+dat1 <- subset(dat1, !is.na(SDGregion))
 
 ## UNICEF region classification
 
@@ -53,7 +67,6 @@ names(dat2)[names(dat2) == "ISO3Code"] <- "iso3"
 ## Combine region reporting schemes
 
 dat <- merge(dat1, dat2, by = c("iso3"), all = TRUE)
-
 
 # Save output(s) ----------------------------------------------------------
 

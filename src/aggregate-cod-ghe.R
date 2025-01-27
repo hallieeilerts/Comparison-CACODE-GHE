@@ -5,13 +5,23 @@
 #' Clear environment
 rm(list=ls())
 #' Libraries
+library(data.table)
 #' Inputs
 ## GHE 2021 results
 load("./data/ghe/GHE2021_deaths.RData")
 ## GHE causes mapped to COD categories
 # Indicators included for (i) parent_category: CODs that are an umbrella category for other CODs,
-# (ii) CODs that were not listed in GHE2019 Methods pdf and are not included in sum for all deaths
-key <- read.csv("./data/classification-keys/GHE-CACODE-cause-mapping_20241023.csv")
+# (ii) CODs that are level 4 causes (were not listed in GHE2019 Methods pdf and are not included in sum for all deaths).
+key <- read.csv("./data/classification-keys/GHE-CACODE-cause-mapping_20250115.csv")
+# ## COD reclassification
+# dat_filename <- list.files("./data/classification-keys")
+# dat_filename <- dat_filename[grepl("codreclassification", dat_filename, ignore.case = TRUE)]
+# key_00to28d <- read.csv(paste0("./data/classification-keys/", dat_filename[grepl("00to28d", dat_filename, ignore.case = TRUE)], sep = ""))
+# key_01to59m <- read.csv(paste0("./data/classification-keys/", dat_filename[grepl("01to59m", dat_filename, ignore.case = TRUE)], sep = ""))
+# key_05to09y <- read.csv(paste0("./data/classification-keys/", dat_filename[grepl("05to09y", dat_filename, ignore.case = TRUE)], sep = ""))
+# key_10to14y <- read.csv(paste0("./data/classification-keys/", dat_filename[grepl("10to14y", dat_filename, ignore.case = TRUE)], sep = ""))
+# key_15to19yM <- read.csv(paste0("./data/classification-keys/", dat_filename[grepl("15to19yM", dat_filename, ignore.case = TRUE)], sep = ""))
+# key_15to19yF <- read.csv(paste0("./data/classification-keys/", dat_filename[grepl("15to19yF", dat_filename, ignore.case = TRUE)], sep = ""))
 ################################################################################
 
 # Age groups
@@ -28,7 +38,7 @@ dat <- subset(dat, !(iso3 == "PRI"))
 # 0.1	is 0-27 days (neonates)
 # 0.11 is 1 to 11 months (postneonatal under 1 year)
 dat$AgeGroup <- NA
-dat$AgeGroup[dat$age == 0.10] <- "00to01m"
+dat$AgeGroup[dat$age == 0.10] <- "00to28d"
 dat$AgeGroup[dat$age == 0.11] <- "01to11m"
 dat$AgeGroup[dat$age == 1.00] <- "01to04y"
 dat$AgeGroup[dat$age == 5.00] <- "05to09y"
@@ -37,7 +47,7 @@ dat$AgeGroup[dat$age == 15.00] <- "15to19y"
 dat$AgeGroup[dat$age == 20.00] <- "20to24y"
 dat$age <- NULL
 # Vector of all included GHE age groups
-v_AgeGroup <- c("00to01m", "01to11m", "01to04y", "05to09y", "10to14y", "15to19y", "20to24y")
+v_AgeGroup <- c("00to28d", "01to11m", "01to04y", "05to09y", "10to14y", "15to19y", "20to24y")
 
 # Recode sex
 dat$sex[dat$sex == 1] <- "Male"
@@ -62,7 +72,7 @@ fn_causeAgg <- function(dat, key, x){
   # Scalar with age-specific mapping column name
   v_COD_mapping_agesp <- names(key)[grep(x, names(key), ignore.case = TRUE)]
   v_COD_mapping_agesp <- sort(v_COD_mapping_agesp)
-  key_agesp <- key[, c("ghecause","causename","parent_category", "excluded_from_total",
+  key_agesp <- key[, c("ghecause","causename","parent_category", "level4cause",
                        v_COD_mapping_agesp)]
   
   # Merge with cause mapping
@@ -83,14 +93,14 @@ fn_causeAgg <- function(dat, key, x){
   }
   
   # Delete causes that should be excluded prior to aggregation
-  dat_agesp <- subset(dat_agesp, is.na(parent_category) & is.na(excluded_from_total))
+  dat_agesp <- subset(dat_agesp, is.na(parent_category) & is.na(level4cause))
   
   # Get population count for age/sex/country/year
   dat_pop <- dat_agesp[,c("iso3","sex","year","AgeGroup","pop")]
   dat_pop <- dat_pop[!duplicated(dat_pop),]
   
   # Delete unnecessary columns prior to aggregation
-  v_del <- c("ghecause","causename","parent_category","excluded_from_total","pop")
+  v_del <- c("ghecause","causename","parent_category","level4cause","pop")
   dat_agesp <- dat_agesp[,!(names(dat_agesp) %in% v_del)]
   
   # Grouping variables for aggregation
@@ -112,11 +122,11 @@ fn_causeAgg <- function(dat, key, x){
   # dat_aggsex <- setDT(dat_aggsex)[,lapply(.SD, sum),by=v_grouping2]
   # dat_aggsex$sex <- 3
   # res <- rbind(dat_agg, dat_aggsex)
-
+  
   # Tidy
   res <- dat_agg
   res <- res[order(res$iso3, res$AgeGroup, res$sex, res$year, res$cacodecause),]
-
+  
   return(res)
   
 }
@@ -125,11 +135,23 @@ fn_causeAgg <- function(dat, key, x){
 l_dat_agg <- lapply(v_AgeGroup, function(x) fn_causeAgg(dat, key, x))
 
 # Convert into dataframe
-df_dat_agg <- do.call(rbind, l_dat_agg)
+dat_agg <- do.call(rbind, l_dat_agg)
+
+# Create 01to59m
+v_grouping <- c("iso3", "sex", "year", "AgeGroup", "cacodecause")
+dat_01to59m <- subset(dat_agg, AgeGroup %in% c("01to11m", "01to04y"))
+dat_01to59m$AgeGroup <- "01to59m"
+dat_01to59m <- setDT(dat_01to59m)[,lapply(.SD, sum),by=v_grouping]
+dat_agg <- rbind(dat_agg, dat_01to59m)
+
+# Tidy
+res <- dat_agg
+res <- res[order(res$AgeGroup, res$iso3, res$sex, res$year, res$cacodecause),]
 
 # Save output(s) ----------------------------------------------------------
 
-saveRDS(df_dat_agg, "./gen/ghe-agg-cod.rds")
+saveRDS(res, "./gen/ghe-agg-cod.rds")
+
 
 
 

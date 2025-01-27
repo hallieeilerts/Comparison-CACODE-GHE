@@ -17,14 +17,17 @@ key <- read.csv("./gen/key_region.csv")
 dat <- merge(ghe, key, by = "iso3", all = TRUE)
 
 # GHE countries that are not included in the UNICEF region key
-# A bunch
+# A bunch.
 unique(subset(dat, is.na(UNICEFregion))$iso3)
 # GHE countries that are not included in the SDG region key
-# All GHE countries are included in the SDG region key
+# All are included.
 unique(subset(dat, is.na(SDGregion))$iso3)
+# GHE countries that are not included in the WHO region key
+# A bunch.
+unique(subset(dat, is.na(WHOregion))$iso3)
 
 # Merge on regions
-dat <- merge(ghe, key[,c("iso3", "WHOname", "SDGregion", "wbinc13")], by = "iso3")
+dat <- merge(ghe, key[,c("iso3", "WHOname", "WHOregion", "SDGregion", "wbinc13")], by = "iso3")
 
 # Aggregate by SDG region -------------------------------------------------
 
@@ -34,7 +37,7 @@ dat_pop <- dat_pop[!duplicated(dat_pop),]
 dat_pop <- setDT(dat_pop)[,lapply(.SD, sum),by=list(SDGregion,sex,year,AgeGroup)]
 
 # Delete unnecessary columns prior to aggregation
-v_del <- c("iso3","WHOname","wbinc13","pop")
+v_del <- c("iso3","WHOname","WHOregion","wbinc13","pop")
 dat_reg <- as.data.frame(dat)[,!(names(dat) %in% v_del)]
 
 # Aggregate deaths over regions
@@ -57,6 +60,11 @@ dat_world <- merge(dat_world, dat_pop_world, by = c("SDGregion","sex", "year", "
 # Combine with regions
 dat_agg_sdg <- rbind(dat_agg, dat_world)
 
+# Some countries may not have been assigned to region
+# Remove those with NA region
+nrow(subset(dat_agg_sdg, is.na(SDGregion))) # 0
+dat_agg_sdg <- subset(dat_agg_sdg, !is.na(SDGregion))
+
 # Aggregate by income region ----------------------------------------------
 
 # Get population count for region/age/sex/country/year
@@ -65,7 +73,7 @@ dat_pop <- dat_pop[!duplicated(dat_pop),]
 dat_pop <- setDT(dat_pop)[,lapply(.SD, sum),by=list(wbinc13,sex,year,AgeGroup)]
 
 # Delete unnecessary columns prior to aggregation
-v_del <- c("iso3","WHOname","SDGregion","pop")
+v_del <- c("iso3","WHOname","WHOregion","SDGregion","pop")
 dat_reg <- as.data.frame(dat)[,!(names(dat) %in% v_del)]
 
 # Aggregate deaths over regions
@@ -76,12 +84,41 @@ dat_agg <- setDT(dat_reg)[,lapply(.SD, sum),by=v_grouping]
 # Merge on population counts
 dat_agg_inc <- merge(as.data.frame(dat_agg), dat_pop, by = c("wbinc13","sex", "year", "AgeGroup"))
 
+# Some countries may not have been assigned to region
+# Remove those with NA region
+nrow(subset(dat_agg_inc, is.na(wbinc13))) # 0
+dat_agg_inc<- subset(dat_agg_inc, !is.na(wbinc13))
+
+# Aggregate by WHO region -------------------------------------------------
+
+# Get population count for region/age/sex/country/year
+dat_pop <- dat[,c("WHOregion","sex","year","AgeGroup","pop")]
+dat_pop <- dat_pop[!duplicated(dat_pop),]
+dat_pop <- setDT(dat_pop)[,lapply(.SD, sum),by=list(WHOregion,sex,year,AgeGroup)]
+
+# Delete unnecessary columns prior to aggregation
+v_del <- c("iso3","WHOname","wbinc13","SDGregion","pop")
+dat_reg <- as.data.frame(dat)[,!(names(dat) %in% v_del)]
+
+# Aggregate deaths over regions
+# Grouping variables for aggregation
+v_grouping <- c("WHOregion","sex", "year", "AgeGroup", "cacodecause")
+dat_agg <- setDT(dat_reg)[,lapply(.SD, sum),by=v_grouping]
+
+# Merge on population counts
+dat_agg_who <- merge(as.data.frame(dat_agg), dat_pop, by = c("WHOregion","sex", "year", "AgeGroup"))
+
+# Some countries may not have been assigned to region
+# Remove those with NA region
+nrow(subset(dat_agg_who, is.na(WHOregion))) # 8602
+dat_agg_who <- subset(dat_agg_who, !is.na(WHOregion))
+
 # Combine -----------------------------------------------------------------
 
 # Harmonize column names
 
 # National level data
-v_del <- c("iso3","WHOname","SDGregion", "wbinc13")
+v_del <- c("iso3", "WHOname", "WHOregion", "SDGregion", "wbinc13")
 dat$Name <- dat$iso3
 dat$AdminLevel <- "National"
 dat <- as.data.frame(dat)[,!(names(dat) %in% v_del)]
@@ -97,8 +134,13 @@ dat_agg_inc$Name <- dat_agg_inc$wbinc13
 dat_agg_inc$AdminLevel <- "RegionalInc"
 dat_agg_inc <- as.data.frame(dat_agg_inc)[,!(names(dat_agg_inc) %in% v_del)]
 
+# WHO regions
+dat_agg_who$Name <- dat_agg_who$WHOregion
+dat_agg_who$AdminLevel <- "RegionalWHO"
+dat_agg_who <- as.data.frame(dat_agg_who)[,!(names(dat_agg_who) %in% v_del)]
+
 # Recombine national and regional
-dat <- rbind(dat, dat_agg_sdg, dat_agg_inc)
+dat <- rbind(dat, dat_agg_sdg, dat_agg_inc, dat_agg_who)
 
 # Tidy
 dat <- dat[order(dat$AdminLevel, dat$Name, dat$AgeGroup, dat$sex, dat$year, dat$cacodecause),]
